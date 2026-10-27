@@ -326,99 +326,106 @@ kbd {
   color: var(--text);
 }
 
-/* Help panel under the chart */
+/* Help strip under the chart */
 .pl-help {
-  margin-top: 1.2rem;
+  margin-top: 1rem;
   background: var(--bg-panel);
   border: 1px solid var(--border);
-  border-radius: 20px;
-  box-shadow: var(--shadow);
+  border-radius: 16px;
 }
 
 .pl-help summary {
   cursor: pointer;
-  padding: 1rem 1.3rem;
+  padding: 0.7rem 1.1rem;
+  font-size: 0.9rem;
   font-weight: 700;
-  color: var(--text);
+  color: var(--muted);
+}
+
+.pl-help[open] summary {
+  padding-bottom: 0.2rem;
 }
 
 .pl-help summary:focus-visible {
   outline: 3px solid var(--blue);
   outline-offset: -3px;
-  border-radius: 20px;
+  border-radius: 16px;
 }
 
 .pl-help-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 1rem;
-  padding: 0 1.3rem 1.3rem;
+  padding: 0.4rem 0 0.9rem;
 }
 
-.pl-help-card {
+.pl-help-item {
+  padding: 0 1.1rem;
+}
+
+.pl-help-item + .pl-help-item {
+  border-left: 1px solid rgba(149, 181, 255, 0.14);
+}
+
+.pl-help-item h3 {
+  margin: 0 0 0.35rem;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--soft);
+}
+
+.pl-help-item p {
+  margin: 0 0 0.4rem;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.pl-help-item p.pl-help-soft {
+  color: var(--muted);
+  font-size: 0.82rem;
+}
+
+.pl-help-item ul {
   margin: 0;
-  padding: 1rem 1.1rem;
-  border-radius: 14px;
-  border: 1px solid rgba(149, 181, 255, 0.16);
-  background: rgba(10, 17, 31, 0.55);
-}
-
-.pl-help-card h3 {
-  margin: 0 0 0.5rem;
-  font-size: 1rem;
-}
-
-.pl-help-card p,
-.pl-help-card li {
-  font-size: 0.88rem;
-  line-height: 1.55;
-}
-
-.pl-help-card p {
-  margin-bottom: 0.5rem;
-}
-
-.pl-help-card ul {
-  margin: 0 0 0.5rem;
   padding: 0;
   list-style: none;
 }
 
-.pl-help-card li {
-  margin-bottom: 0.3rem;
+.pl-help-item li {
+  margin: 0 0 0.2rem;
+  font-size: 0.86rem;
   color: var(--muted);
 }
 
-.pl-help-card li .pl-dot {
-  display: inline-block;
-  margin-right: 0.45rem;
-}
-
-.pl-help-card strong {
+.pl-help-item li strong {
   color: var(--text);
+  margin-right: 0.25rem;
 }
 
-.pl-help-keys li {
-  padding-left: 0.9rem;
-  position: relative;
+.pl-help-item .pl-dot {
+  display: inline-block;
+  margin-right: 0.35rem;
 }
 
-.pl-help-keys li::before {
-  content: "\2022";
-  position: absolute;
-  left: 0;
-  color: var(--soft);
-}
-
-@media (max-width: 1100px) {
+@media (max-width: 1000px) {
   .pl-help-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    row-gap: 0.8rem;
+  }
+
+  .pl-help-item:nth-child(3) {
+    border-left: 0;
   }
 }
 
-@media (max-width: 640px) {
+@media (max-width: 560px) {
   .pl-help-grid {
     grid-template-columns: 1fr;
+  }
+
+  .pl-help-item + .pl-help-item {
+    border-left: 0;
   }
 }
 

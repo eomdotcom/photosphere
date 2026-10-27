@@ -641,45 +641,38 @@ find.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); findStudent(); }
 });
 
-/* ================= HELP PANEL ================= */
+/* ================= HELP ================= */
+// A short explanation per idea. Numbers come from zones.js so they always match.
 function drawHelp() {
   const dot = key => `<span class="pl-dot" style="--c:${Z[key].color}"></span>`;
   $('help').innerHTML = `
-    <section class="pl-help-card">
-      <h3>The three zones</h3>
-      <p>Each student's concern score puts them in one zone:</p>
+    <div class="pl-help-item">
+      <h3>Zones</h3>
+      <p>Each student's concern score places them in one zone:</p>
       <ul>
-        <li>${dot('calm')}<strong>Calm Orbit</strong>: ${CALM_MAX} or below</li>
-        <li>${dot('steady')}<strong>Steady Star</strong>: above ${CALM_MAX}, up to ${STEADY_MAX}</li>
-        <li>${dot('flare')}<strong>Solar Flare Zone</strong>: above ${STEADY_MAX}</li>
+        <li>${dot('calm')}<strong>Calm Orbit</strong> ${CALM_MAX} or less</li>
+        <li>${dot('steady')}<strong>Steady Star</strong> above ${CALM_MAX}, up to ${STEADY_MAX}</li>
+        <li>${dot('flare')}<strong>Solar Flare Zone</strong> over ${STEADY_MAX}</li>
       </ul>
-      <p>The number on each planet is how many students are in it.</p>
-    </section>
-
-    <section class="pl-help-card">
+    </div>
+    <div class="pl-help-item">
       <h3>Zone lines</h3>
-      <p>The dashed <strong>${CALM_MAX}</strong> and <strong>${STEADY_MAX}</strong> lines are the cut-offs between zones.</p>
-      <p>Students within <strong>${MARGIN} points</strong> of a line sit beside it, on their own zone's side.
-        The closer a name sits to the line, the closer their score is to it, so a small change could move them into the next zone.</p>
-    </section>
-
-    <section class="pl-help-card">
+      <p>The dashed <strong>${CALM_MAX}</strong> and <strong>${STEADY_MAX}</strong> lines are the cut-offs between zones.
+        Names beside a line are within <strong>${MARGIN} points</strong> of it, on their own zone's side.</p>
+      <p class="pl-help-soft">The closer a name sits to the line, the closer their score. A ${CALM_MAX - 1} sits right against the ${CALM_MAX} line.</p>
+    </div>
+    <div class="pl-help-item">
       <h3>Changed zone</h3>
-      <p>"New since week&nbsp;X" under a planet counts students who were in a different zone the week before.
-        The side panel lists them: <span class="moved up">amber</span> moved into a higher-concern zone,
-        <span class="moved down">teal</span> moved into a lower one.</p>
-      <p>Being near a line or changing zone is a reason to look closer, not a verdict.</p>
-    </section>
-
-    <section class="pl-help-card">
-      <h3>Getting around</h3>
-      <ul class="pl-help-keys">
-        <li><strong>Everyone</strong> or select a planet: every student in that zone, shown by score</li>
-        <li>Hover or tab to a name for the exact score</li>
-        <li>Select any name to open their details</li>
-        <li><kbd>+</kbd> <kbd>&minus;</kbd> zoom &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> next planet &middot; <kbd>Esc</kbd> back</li>
-      </ul>
-    </section>`;
+      <p>Compared with the week before. Under each planet: how many students are new to that zone.</p>
+      <p class="pl-help-soft">In the side panel, <span class="moved up">amber</span> moved up into a higher-concern zone,
+        <span class="moved down">teal</span> moved down.</p>
+    </div>
+    <div class="pl-help-item">
+      <h3>Explore</h3>
+      <p>Select a planet or <strong>Everyone</strong> to see every student in a zone, shown by score.
+        Hover a name for details, select it to open their page.</p>
+      <p class="pl-help-soft"><kbd>+</kbd> <kbd>&minus;</kbd> zoom &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> next planet &middot; <kbd>Esc</kbd> back</p>
+    </div>`;
 }
 
 drawHelp();
