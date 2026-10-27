@@ -1,18 +1,18 @@
 import { supabase } from './supabase.js';
+import {
+  CALM_MAX, STEADY_MAX, MARGIN, ZONES as BASE_ZONES,
+  parseWeek, studentsForWeek, nearText, initials, updateViewSwitch,
+} from './zones.js';
 
 /* ================= SETTINGS =================
-   Same cut-offs as dashboard.js and student.html:
-   score <= 30 Calm Orbit, <= 60 Steady Star, above 60 Solar Flare Zone. */
-const CALM_MAX = 30;
-const STEADY_MAX = 60;
-// "Near a boundary" = within this many points of 30 or 60
-const MARGIN = 5;
-
-const ZONES = [
-  { key: 'calm',   name: 'Calm Orbit',       blurb: 'No sign of extra attention needed right now', color: '#4fd1a5', light: '#c4f7e3', dark: '#06302a' },
-  { key: 'steady', name: 'Steady Star',      blurb: 'Some signs worth keeping an eye on',          color: '#9b8dff', light: '#e2dcff', dark: '#1d1552' },
-  { key: 'flare',  name: 'Solar Flare Zone', blurb: 'Several signs together, worth reviewing soon', color: '#ff9152', light: '#ffe0bf', dark: '#5b1608' },
-];
+   The zone rules (30 / 60 cut-offs, 5-point margin) live in zones.js,
+   shared with the list view. Planet colours are only needed here. */
+const PLANET_COLOURS = {
+  calm:   { color: '#4fd1a5', light: '#c4f7e3', dark: '#06302a' },
+  steady: { color: '#9b8dff', light: '#e2dcff', dark: '#1d1552' },
+  flare:  { color: '#ff9152', light: '#ffe0bf', dark: '#5b1608' },
+};
+const ZONES = BASE_ZONES.map(z => ({ ...z, ...PLANET_COLOURS[z.key] }));
 const Z = Object.fromEntries(ZONES.map((z, i) => [z.key, { ...z, i }]));
 
 /* ================= PAGE ELEMENTS ================= */
@@ -36,40 +36,6 @@ const state = {
 let byId = new Map();
 
 /* ================= DATA ================= */
-// Same as dashboard.js: turns 5, "5" or "Week 5" into 5; blanks become null
-function parseWeek(value) {
-  if (value === null || value === undefined) return null;
-  const match = String(value).match(/\d+/);
-  return match ? Number(match[0]) : null;
-}
-
-function zoneFor(score) {
-  if (score <= CALM_MAX) return 'calm';
-  if (score <= STEADY_MAX) return 'steady';
-  return 'flare';
-}
-
-// Is this student close enough to 30 or 60 that their zone could change?
-function nearBoundary(s) {
-  const options = [];
-  if (s.zone === 'calm' && s.score > CALM_MAX - MARGIN) {
-    options.push({ toward: 'steady', dir: 'up', line: CALM_MAX, dist: CALM_MAX - s.score });
-  }
-  if (s.zone === 'steady') {
-    if (s.score <= CALM_MAX + MARGIN) options.push({ toward: 'calm', dir: 'down', line: CALM_MAX, dist: s.score - CALM_MAX });
-    if (s.score > STEADY_MAX - MARGIN) options.push({ toward: 'flare', dir: 'up', line: STEADY_MAX, dist: STEADY_MAX - s.score });
-  }
-  if (s.zone === 'flare' && s.score <= STEADY_MAX + MARGIN) {
-    options.push({ toward: 'steady', dir: 'down', line: STEADY_MAX, dist: s.score - STEADY_MAX });
-  }
-  if (!options.length) return null;
-  options.sort((a, b) => a.dist - b.dist);
-  return options[0];
-}
-
-const nearText = n =>
-  `${n.dist.toFixed(1)} pts ${n.dir === 'up' ? 'under' : 'over'} the ${n.line} line, close to ${Z[n.toward].name}`;
-
 async function loadStudents() {
   const { data, error } = await supabase
     .from('students')
@@ -115,27 +81,10 @@ function showWeek(week) {
   });
   history.replaceState(null, '', `?week=${week}`);
 
-  const rows = state.allRows.filter(row => parseWeek(row.week) === week);
-  let skipped = 0;
-  state.students = [];
+  updateViewSwitch(week);
 
-  rows.forEach(row => {
-    const raw = row.concern_score;
-    const score = Number(raw);
-    // A blank score must not land in Calm Orbit (same rule as the dashboard)
-    if (raw === null || raw === '' || Number.isNaN(score)) {
-      skipped++;
-      return;
-    }
-    const s = {
-      id: String(row.student_id),
-      name: row.student_name || `Student ${row.student_id}`,
-      score,
-      zone: zoneFor(score),
-    };
-    s.near = nearBoundary(s);
-    state.students.push(s);
-  });
+  const { students, skipped } = studentsForWeek(state.allRows, week);
+  state.students = students;
 
   byId = new Map(state.students.map(s => [s.id, s]));
   $('student-names').innerHTML = state.students
@@ -152,11 +101,6 @@ function showWeek(week) {
 /* ================= HELPERS ================= */
 const esc = s => String(s).replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-
-const initials = name => {
-  const parts = name.trim().split(/\s+/);
-  return ((parts[0]?.[0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
-};
 
 const studentUrl = s => `student.html?id=${encodeURIComponent(s.id)}&week=${state.week}`;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -361,7 +305,7 @@ function drawZoom(key) {
   const cx = 600, cy = 330, pr = 92, cr = 15;
   const rings = ringLayout(list.length, 145, 37, 37);
   rings.forEach(rg => { svg += `<circle class="orbit" cx="${cx}" cy="${cy}" r="${rg.r}"/>`; });
-  svg += planet(z, cx, cy, pr, { count: list.length, label: `${z.name}, ${list.length} students. Back to boundary view.` });
+  svg += planet(z, cx, cy, pr, { count: list.length, label: `${z.name}, ${list.length} students. Back to all planets.` });
 
   let idx = 0;
   rings.forEach((rg, ri) => {
@@ -418,7 +362,7 @@ function drawSide() {
   } else {
     const z = Z[state.focus];
     const list = lists[state.focus];
-    h += `<button class="pl-btn pl-back" data-action="out">&larr; Boundary view</button>`;
+    h += `<button class="pl-btn pl-back" data-action="out">&larr; All planets</button>`;
     h += `<h2>${z.name}</h2><p>${z.blurb}. ${list.length} student${list.length === 1 ? '' : 's'}, highest score first.</p>`;
     h += list.length
       ? `<ul class="pl-rows">${list.map(row).join('')}</ul>`
@@ -429,9 +373,10 @@ function drawSide() {
   side.scrollTop = 0;
 }
 
+// Highlight whichever mode is showing (zoomed out = near a zone line, zoomed in = everyone)
 function syncButtons() {
-  $('zoom-out').disabled = state.mode === 'overview';
-  $('zoom-in').disabled = state.mode === 'zoom';
+  $('zoom-out').setAttribute('aria-pressed', String(state.mode === 'overview'));
+  $('zoom-in').setAttribute('aria-pressed', String(state.mode === 'zoom'));
 }
 
 /* ================= ZOOM =================

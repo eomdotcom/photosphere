@@ -83,6 +83,13 @@
   display: flex;
 }
 
+/* The current mode is highlighted, same as the list view's filter */
+.pl-btn[aria-pressed="true"] {
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  color: #061621;
+  border-color: transparent;
+}
+
 .pl-zoom .pl-btn:first-child {
   border-radius: 12px 0 0 12px;
 }
