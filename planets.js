@@ -1,7 +1,8 @@
 import { supabase } from './supabase.js';
 import {
   CALM_MAX, STEADY_MAX, MARGIN, ZONES as BASE_ZONES,
-  parseWeek, studentsForWeek, nearText, initials, updateViewSwitch,
+  parseWeek, weekList, previousWeek, studentsForWeek,
+  nearText, movedTag, movedText, initials, updateViewSwitch,
 } from './zones.js';
 
 /* ================= SETTINGS =================
@@ -27,7 +28,9 @@ const find = $('find');
 
 const state = {
   allRows: [],       // every row from Supabase, fetched once
+  weeks: [],         // every week in the data, e.g. [1, 3, 5]
   week: null,
+  prevWeek: null,    // the week before, to compare zones with
   students: [],      // this week's students: { id, name, score, zone, near }
   mode: 'overview',  // 'overview' (zoomed out) or 'zoom' (zoomed in)
   focus: null,       // which zone is zoomed in
@@ -51,9 +54,8 @@ async function loadStudents() {
 
   state.allRows = data;
 
-  const weeks = [...new Set(
-    data.map(row => parseWeek(row.week)).filter(w => w !== null)
-  )].sort((a, b) => a - b);
+  const weeks = weekList(data);
+  state.weeks = weeks;
 
   if (weeks.length === 0) {
     statusEl.textContent = 'No week values found in the data.';
@@ -83,7 +85,8 @@ function showWeek(week) {
 
   updateViewSwitch(week);
 
-  const { students, skipped } = studentsForWeek(state.allRows, week);
+  state.prevWeek = previousWeek(state.weeks, week);
+  const { students, skipped } = studentsForWeek(state.allRows, week, state.prevWeek);
   state.students = students;
 
   byId = new Map(state.students.map(s => [s.id, s]));
@@ -93,6 +96,9 @@ function showWeek(week) {
   const nearCount = state.students.filter(s => s.near).length;
   statusEl.textContent = `Showing week ${week}: ${state.students.length} students, ` +
     `${nearCount} within ${MARGIN} points of a zone line` +
+    (state.prevWeek !== null
+      ? `, ${state.students.filter(s => s.moved).length} changed zone since week ${state.prevWeek}`
+      : '') +
     (skipped ? ` (${skipped} skipped, no score)` : '');
 
   draw();
@@ -265,6 +271,10 @@ function drawOverview() {
     });
     svg += `<text class="lbl-name" x="${p.x}" y="430">${esc(z.name)}</text>`;
     svg += `<text class="lbl-sub" x="${p.x}" y="453">${list.length} student${list.length === 1 ? '' : 's'}</text>`;
+    const movedIn = list.filter(s => s.moved).length;
+    if (state.prevWeek !== null) {
+      svg += `<text class="lbl-moved" x="${p.x}" y="474">${movedIn ? `${movedIn} new since week ${state.prevWeek}` : `No change since week ${state.prevWeek}`}</text>`;
+    }
   });
 
   // The zone lines, with near-line students on their own zone's side
@@ -373,7 +383,7 @@ function row(s) {
   const n = s.near;
   return `<li><a href="${esc(studentUrl(s))}" data-id="${esc(s.id)}" style="--c:${z.color}">
     <span class="pl-ini" aria-hidden="true">${esc(initials(s.name))}</span>
-    <span class="pl-name">${esc(s.name)}</span>
+    <span class="pl-who"><span class="pl-name">${esc(s.name)}</span>${s.moved ? `<span class="moved ${s.moved}" title="${esc(movedText(s))}">${esc(movedTag(s))}</span>` : ''}</span>
     <span class="pl-score">${s.score.toFixed(2)}</span>
     <span class="pl-arrow" style="--c:${n ? Z[n.toward].color : 'transparent'}" ${n ? `title="${esc(nearText(n))}"` : ''}>${n ? (n.dir === 'up' ? '&#9650;' : '&#9660;') : ''}<span class="sr-only">${n ? ', ' + esc(nearText(n)) : ''}</span></span>
   </a></li>`;
@@ -399,6 +409,17 @@ function drawSide() {
         <ul class="pl-rows">${group.map(row).join('')}</ul>`;
     });
     if (!any) h += `<p class="pl-empty">No one is within ${MARGIN} points of a zone line this week.</p>`;
+
+    // Who changed zone since the week before
+    if (state.prevWeek !== null) {
+      const movers = state.students.filter(s => s.moved)
+        .sort((a, b) => (a.moved === b.moved ? b.score - a.score : a.moved === 'up' ? -1 : 1));
+      h += `<h2 class="pl-h2-gap">Changed zone</h2>
+        <p>Since week ${state.prevWeek}. Moving zone is a reason to look, not a verdict either.</p>`;
+      h += movers.length
+        ? `<ul class="pl-rows">${movers.map(row).join('')}</ul>`
+        : `<p class="pl-empty">No one changed zone since week ${state.prevWeek}.</p>`;
+    }
     h += `<div class="pl-zone-btns">${ZONES.map(z => `
       <button class="pl-zone-btn" data-zone="${z.key}" style="--c:${z.color}">
         <span class="pl-dot"></span>See everyone in ${z.name}<span class="n">${lists[z.key].length}</span>
@@ -510,6 +531,7 @@ function showTip(a) {
   if (!s) return;
   tip.innerHTML = `<strong>${esc(s.name)}</strong>Score ${s.score.toFixed(2)} &middot; ${esc(Z[s.zone].name)}` +
     (s.near ? `<span class="t-near">${esc(nearText(s.near))}</span>` : '') +
+    (s.moved ? `<span class="t-moved ${s.moved}">${esc(movedText(s))}</span>` : '') +
     `<span class="t-open">Open student details &rarr;</span>`;
   const r = a.getBoundingClientRect();
   const w = wrap.getBoundingClientRect();

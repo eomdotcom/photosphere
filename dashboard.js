@@ -1,11 +1,13 @@
 import { supabase } from './supabase.js';
 import {
-  MARGIN, ZONES, parseWeek, studentsForWeek, nearText, initials, updateViewSwitch,
+  MARGIN, ZONES, parseWeek, weekList, previousWeek, studentsForWeek,
+  nearText, movedTag, movedText, initials, updateViewSwitch,
 } from './zones.js';
 
 let allRows = [];        // every row from Supabase, fetched once
+let weeks = [];          // every week in the data, e.g. [1, 3, 5]
 let currentWeek = null;
-let onlyNear = false;    // "Near a zone line" filter on/off
+let filter = 'all';      // 'all', 'near' (near a zone line) or 'moved' (changed zone since last week)
 
 const statusEl = document.getElementById('dashboard-status');
 const weekButtons = document.getElementById('week-buttons');
@@ -39,9 +41,7 @@ async function loadStudents() {
   allRows = data;
 
   // 1. Read every value in the week column, keep unique ones, sort them
-  const weeks = [...new Set(
-    data.map(row => parseWeek(row.week)).filter(w => w !== null)
-  )].sort((a, b) => a - b);
+  weeks = weekList(data);
 
   if (weeks.length === 0) {
     statusEl.textContent = 'No week values found in the data.';
@@ -75,6 +75,7 @@ function showWeek(week) {
   history.replaceState(null, '', `?week=${week}`);
   updateViewSwitch(week);
 
+  syncMovedButton();
   render();
 }
 
@@ -89,9 +90,21 @@ function makeRow(s) {
   ini.setAttribute('aria-hidden', 'true');
   ini.textContent = initials(s.name);
 
+  // Name, plus a "was Calm Orbit" line underneath, but only in the "Changed zone" filter
+  // (kept out of the normal list so it stays simple)
+  const who = document.createElement('span');
+  who.className = 'who';
   const name = document.createElement('span');
   name.className = 'name';
   name.textContent = s.name;
+  who.appendChild(name);
+  if (s.moved && filter === 'moved') {
+    const moved = document.createElement('span');
+    moved.className = 'moved ' + s.moved;
+    moved.textContent = movedTag(s);
+    moved.title = movedText(s);
+    who.appendChild(moved);
+  }
 
   const score = document.createElement('span');
   score.className = 'score';
@@ -107,7 +120,7 @@ function makeRow(s) {
     near.setAttribute('aria-label', nearText(s.near));
   }
 
-  link.append(ini, name, score, near);
+  link.append(ini, who, score, near);
   li.appendChild(link);
   return li;
 }
@@ -120,14 +133,15 @@ function emptyRow(text) {
 }
 
 function render() {
-  const { students, skipped } = studentsForWeek(allRows, currentWeek);
+  const prevWeek = previousWeek(weeks, currentWeek);
+  const { students, skipped } = studentsForWeek(allRows, currentWeek, prevWeek);
   const query = findInput.value.trim().toLowerCase();
   let shownTotal = 0;
 
   ZONES.forEach(z => {
     const inZone = students.filter(s => s.zone === z.key);
     const shown = inZone.filter(s =>
-      (!onlyNear || s.near) &&
+      (filter === 'all' || (filter === 'near' && s.near) || (filter === 'moved' && s.moved)) &&
       (!query || s.name.toLowerCase().includes(query))
     );
     shownTotal += shown.length;
@@ -139,6 +153,8 @@ function render() {
       lists[z.key].appendChild(emptyRow('No students in this zone this week'));
     } else if (query) {
       lists[z.key].appendChild(emptyRow('No matches here'));
+    } else if (filter === 'moved') {
+      lists[z.key].appendChild(emptyRow('No one moved into this zone'));
     } else {
       lists[z.key].appendChild(emptyRow('No one near a zone line'));
     }
@@ -152,19 +168,37 @@ function render() {
   const nearCount = students.filter(s => s.near).length;
   let text = `Showing week ${currentWeek}: ${students.length} students, ` +
     `${nearCount} within ${MARGIN} points of a zone line`;
+  if (prevWeek !== null) {
+    text += `, ${students.filter(s => s.moved).length} changed zone since week ${prevWeek}`;
+  }
   if (skipped) text += ` (${skipped} skipped, no score)`;
   if (query) text += `. ${shownTotal} matching "${findInput.value.trim()}"`;
   statusEl.textContent = text;
 }
 
-// Everyone | Near a zone line
+// Everyone | Near a zone line | Changed zone
+function setFilter(value) {
+  filter = value;
+  filterButtons.forEach(b => b.setAttribute('aria-pressed', String(b.dataset.filter === value)));
+}
+
 filterButtons.forEach(btn => {
   btn.addEventListener('click', () => {
-    onlyNear = btn.dataset.filter === 'near';
-    filterButtons.forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+    setFilter(btn.dataset.filter);
     render();
   });
 });
+
+// "Changed zone" needs an earlier week to compare with
+function syncMovedButton() {
+  const btn = document.querySelector('[data-filter="moved"]');
+  const prevWeek = previousWeek(weeks, currentWeek);
+  btn.disabled = prevWeek === null;
+  btn.title = prevWeek === null
+    ? `Week ${currentWeek} is the first week, so there's nothing to compare with`
+    : `Students whose zone is different from week ${prevWeek}`;
+  if (btn.disabled && filter === 'moved') setFilter('all');
+}
 
 // Search filters as you type
 findInput.addEventListener('input', () => {

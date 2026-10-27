@@ -224,6 +224,43 @@
   box-shadow: 0 0 0 2px var(--c);
 }
 
+.pl-who {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  line-height: 1.3;
+}
+
+.moved {
+  font-size: 0.72rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.moved.up,
+.pl-tip .t-moved.up {
+  color: var(--amber);
+}
+
+.moved.down,
+.pl-tip .t-moved.down {
+  color: var(--teal);
+}
+
+.pl-tip .t-moved {
+  display: block;
+}
+
+.pl-h2-gap {
+  margin-top: 1.4rem;
+}
+
+.lbl-moved {
+  fill: var(--amber);
+  font: 600 12px "Segoe UI", Tahoma, sans-serif;
+  text-anchor: middle;
+}
+
 .pl-name {
   overflow: hidden;
   text-overflow: ellipsis;
