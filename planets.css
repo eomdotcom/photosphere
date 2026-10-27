@@ -326,6 +326,102 @@ kbd {
   color: var(--text);
 }
 
+/* Help panel under the chart */
+.pl-help {
+  margin-top: 1.2rem;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.pl-help summary {
+  cursor: pointer;
+  padding: 1rem 1.3rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.pl-help summary:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: -3px;
+  border-radius: 20px;
+}
+
+.pl-help-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 1rem;
+  padding: 0 1.3rem 1.3rem;
+}
+
+.pl-help-card {
+  margin: 0;
+  padding: 1rem 1.1rem;
+  border-radius: 14px;
+  border: 1px solid rgba(149, 181, 255, 0.16);
+  background: rgba(10, 17, 31, 0.55);
+}
+
+.pl-help-card h3 {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.pl-help-card p,
+.pl-help-card li {
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.pl-help-card p {
+  margin-bottom: 0.5rem;
+}
+
+.pl-help-card ul {
+  margin: 0 0 0.5rem;
+  padding: 0;
+  list-style: none;
+}
+
+.pl-help-card li {
+  margin-bottom: 0.3rem;
+  color: var(--muted);
+}
+
+.pl-help-card li .pl-dot {
+  display: inline-block;
+  margin-right: 0.45rem;
+}
+
+.pl-help-card strong {
+  color: var(--text);
+}
+
+.pl-help-keys li {
+  padding-left: 0.9rem;
+  position: relative;
+}
+
+.pl-help-keys li::before {
+  content: "\2022";
+  position: absolute;
+  left: 0;
+  color: var(--soft);
+}
+
+@media (max-width: 1100px) {
+  .pl-help-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .pl-help-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
 /* Tooltip */
 .pl-tip {
   position: absolute;
