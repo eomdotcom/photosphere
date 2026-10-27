@@ -1,4 +1,4 @@
-# Photosphere — FourCast
+# Photosphere by FourCast
 
 Adviser-facing proof-of-concept for INFOMGMT 399 (Project 2: early-warning tool for student engagement).
 
