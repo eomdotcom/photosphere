@@ -441,7 +441,7 @@ main a:hover {
 
 /* Both dashboard views (list and planets) share one width */
 .dashboard-main {
-  max-width: 1280px;
+  max-width: 1600px;
 }
 
 /* Current page in the navbar */
@@ -479,4 +479,15 @@ main a:hover {
 .view-switch a[aria-current="page"] {
   background: linear-gradient(135deg, var(--purple), var(--blue));
   color: #061621;
+}
+
+/* Very wide screens: scale the whole page up instead of leaving empty sides */
+@media (min-width: 2200px) {
+  html { font-size: 20px; }
+  .dashboard-main { max-width: 2000px; }
+}
+
+@media (min-width: 3000px) {
+  html { font-size: 24px; }
+  .dashboard-main { max-width: 2600px; }
 }
