@@ -43,11 +43,13 @@
       </div>
     </div>
 
-    <p id="dashboard-status" aria-live="polite">Loading students...</p>
+    <div class="summary" id="dashboard-status" aria-live="polite">Loading students...</div>
     <p class="list-key">
       <span class="near to-up" aria-hidden="true">&#9650;</span> close to the zone above
+      <span class="sep" aria-hidden="true">&middot;</span>
       <span class="near to-down" aria-hidden="true">&#9660;</span> close to the zone below
-      <span class="list-key-soft">(within 5 points of 30 or 60)</span>
+      <span class="sep" aria-hidden="true">&middot;</span>
+      within 5 points of the 30 or 60 line
     </p>
 
     <!-- The three zones (filled by dashboard.js) -->

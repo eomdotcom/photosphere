@@ -140,3 +140,25 @@ export function updateViewSwitch(week) {
     a.setAttribute('href', `${page}?week=${week}`);
   });
 }
+
+// The summary chips under the week buttons, e.g.
+// [60 students] [10 near a zone line] [5 changed zone since week 3]
+export function renderSummary(el, { total, near, moved, prevWeek, skipped, note }) {
+  el.innerHTML = '';
+  const add = (count, text, kind) => {
+    const chip = document.createElement('span');
+    chip.className = 'stat' + (kind ? ' ' + kind : '');
+    if (count !== null) {
+      const b = document.createElement('b');
+      b.textContent = count;
+      chip.append(b, ' ');
+    }
+    chip.append(text);
+    el.appendChild(chip);
+  };
+  add(total, total === 1 ? 'student' : 'students');
+  add(near, 'near a zone line', 'stat-near');
+  if (prevWeek !== null) add(moved, `changed zone since week ${prevWeek}`, 'stat-moved');
+  if (skipped) add(skipped, 'skipped (no score)', 'stat-warn');
+  if (note) add(null, note, 'stat-note');
+}

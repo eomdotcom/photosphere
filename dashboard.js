@@ -1,7 +1,7 @@
 import { supabase } from './supabase.js';
 import {
-  MARGIN, ZONES, parseWeek, weekList, previousWeek, studentsForWeek,
-  nearText, movedTag, movedText, initials, updateViewSwitch,
+  ZONES, parseWeek, weekList, previousWeek, studentsForWeek,
+  nearText, movedTag, movedText, initials, updateViewSwitch, renderSummary,
 } from './zones.js';
 
 let allRows = [];        // every row from Supabase, fetched once
@@ -165,15 +165,14 @@ function render() {
       : `${shown.length} of ${inZone.length}`;
   });
 
-  const nearCount = students.filter(s => s.near).length;
-  let text = `Showing week ${currentWeek}: ${students.length} students, ` +
-    `${nearCount} within ${MARGIN} points of a zone line`;
-  if (prevWeek !== null) {
-    text += `, ${students.filter(s => s.moved).length} changed zone since week ${prevWeek}`;
-  }
-  if (skipped) text += ` (${skipped} skipped, no score)`;
-  if (query) text += `. ${shownTotal} matching "${findInput.value.trim()}"`;
-  statusEl.textContent = text;
+  renderSummary(statusEl, {
+    total: students.length,
+    near: students.filter(s => s.near).length,
+    moved: students.filter(s => s.moved).length,
+    prevWeek,
+    skipped,
+    note: query ? `${shownTotal} matching “${findInput.value.trim()}”` : null,
+  });
 }
 
 // Everyone | Near a zone line | Changed zone

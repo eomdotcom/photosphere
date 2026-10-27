@@ -571,6 +571,49 @@ button.danger:hover:not(:disabled) {
 .dot.steady { background: var(--purple); box-shadow: 0 0 8px var(--purple); }
 .dot.flare  { background: var(--amber);  box-shadow: 0 0 8px var(--amber); }
 
+/* Summary chips under the week buttons (both dashboard views) */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 1rem 0 0.7rem;
+  color: var(--muted);
+  font-size: 0.95rem;
+}
+
+.stat {
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--muted);
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.stat b {
+  color: var(--text);
+  font-weight: 800;
+}
+
+.stat.stat-near {
+  border-color: rgba(155, 141, 255, 0.45);
+}
+
+.stat.stat-moved {
+  border-color: rgba(255, 191, 122, 0.45);
+}
+
+.stat.stat-warn {
+  border-style: dashed;
+}
+
+.stat.stat-note {
+  border-color: rgba(122, 215, 255, 0.45);
+  color: var(--blue);
+}
+
 /* ---------- Upload page ---------- */
 .upload-main {
   max-width: 900px;

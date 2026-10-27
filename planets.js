@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 import {
   CALM_MAX, STEADY_MAX, MARGIN, ZONES as BASE_ZONES,
   parseWeek, weekList, previousWeek, studentsForWeek,
-  nearText, movedTag, movedText, initials, updateViewSwitch,
+  nearText, movedTag, movedText, initials, updateViewSwitch, renderSummary,
 } from './zones.js';
 
 /* ================= SETTINGS =================
@@ -93,15 +93,22 @@ function showWeek(week) {
   $('student-names').innerHTML = state.students
     .map(s => `<option value="${esc(s.name)}">`).join('');
 
-  const nearCount = state.students.filter(s => s.near).length;
-  statusEl.textContent = `Showing week ${week}: ${state.students.length} students, ` +
-    `${nearCount} within ${MARGIN} points of a zone line` +
-    (state.prevWeek !== null
-      ? `, ${state.students.filter(s => s.moved).length} changed zone since week ${state.prevWeek}`
-      : '') +
-    (skipped ? ` (${skipped} skipped, no score)` : '');
+  state.skipped = skipped;
+  showSummary();
 
   draw();
+}
+
+// Summary chips under the week buttons (an optional note, e.g. "No match for …")
+function showSummary(note = null) {
+  renderSummary(statusEl, {
+    total: state.students.length,
+    near: state.students.filter(s => s.near).length,
+    moved: state.students.filter(s => s.moved).length,
+    prevWeek: state.prevWeek,
+    skipped: state.skipped,
+    note,
+  });
 }
 
 /* ================= HELPERS ================= */
@@ -622,9 +629,10 @@ async function findStudent() {
   const s = state.students.find(s => s.name.toLowerCase() === q) ||
             state.students.find(s => s.name.toLowerCase().includes(q));
   if (!s) {
-    statusEl.textContent = `No student matching "${find.value}" in week ${state.week}.`;
+    showSummary(`No student matching “${find.value.trim()}” this week`);
     return;
   }
+  showSummary();
   await zoomTo(s.zone);
   const a = stage.querySelector(`.chip[data-id="${CSS.escape(s.id)}"]`);
   if (a) {

@@ -113,26 +113,16 @@
   outline-offset: 2px;
 }
 
-#dashboard-status {
-  margin: 1rem 0 0.3rem;
-}
-
 .list-key {
+  max-width: none;
+  margin: 0;
   font-size: 0.85rem;
   color: var(--soft);
 }
 
-.list-key .near {
-  margin-left: 0.6rem;
-}
-
-.list-key .near:first-child {
-  margin-left: 0;
-}
-
-.list-key-soft {
-  margin-left: 0.4rem;
-  opacity: 0.8;
+.list-key .sep {
+  margin: 0 0.45rem;
+  opacity: 0.6;
 }
 
 .zones {
