@@ -4,6 +4,7 @@ import {
   parseWeek, weekList, previousWeek, studentsForWeek,
   nearText, movedTag, movedText, uniqueInitials, updateViewSwitch, renderSummary,
 } from './zones.js';
+import { loadCases, caseFor, stageLabel } from './cases.js';
 
 /* ================= SETTINGS =================
    The zone rules (30 / 60 cut-offs, 5-point margin) live in zones.js,
@@ -38,9 +39,13 @@ const state = {
   hover: null,       // last planet the mouse was over
 };
 let byId = new Map();
+let cases = new Map(); // student id -> latest case (Solar Flare case status)
 
 /* ================= DATA ================= */
 async function loadStudents() {
+  // Case status badges (if the table isn't set up yet, the planets still work without them)
+  ({ cases } = await loadCases());
+
   const { data, error } = await supabase
     .from('students')
     .select('student_id, student_name, concern_score, week')
@@ -388,12 +393,21 @@ function drawZoom(key) {
 }
 
 /* ---- Side panel: the same students as a plain list ---- */
+// Name, plus the case stage badge for Solar Flare / open cases
+function nameWithCase(s) {
+  const info = caseFor(s, cases);
+  const name = `<span class="pl-name">${esc(s.name)}</span>`;
+  if (!info) return name;
+  const title = info.auto ? 'Case: New (assigned automatically for the Solar Flare Zone)' : `Case: ${stageLabel(info.stage)}`;
+  return `<span class="name-line">${name}<span class="case-pill stage-${info.stage}" title="${esc(title)}">${esc(stageLabel(info.stage))}</span></span>`;
+}
+
 function row(s) {
   const z = Z[s.zone];
   const n = s.near;
   return `<li><a href="${esc(studentUrl(s))}" data-id="${esc(s.id)}" style="--c:${z.color}">
     <span class="pl-ini${state.labels.get(s.id).length > 2 ? ' ini-3' : ''}" aria-hidden="true">${esc(state.labels.get(s.id))}</span>
-    <span class="pl-who"><span class="pl-name">${esc(s.name)}</span>${s.moved ? `<span class="moved ${s.moved}" title="${esc(movedText(s))}">${esc(movedTag(s))}</span>` : ''}</span>
+    <span class="pl-who">${nameWithCase(s)}${s.moved ? `<span class="moved ${s.moved}" title="${esc(movedText(s))}">${esc(movedTag(s))}</span>` : ''}</span>
     <span class="pl-score">${s.score.toFixed(2)}</span>
     <span class="pl-arrow" style="--c:${n ? Z[n.toward].color : 'transparent'}" ${n ? `title="${esc(nearText(n))}"` : ''}>${n ? (n.dir === 'up' ? '&#9650;' : '&#9660;') : ''}<span class="sr-only">${n ? ', ' + esc(nearText(n)) : ''}</span></span>
   </a></li>`;
@@ -537,6 +551,7 @@ function showTip(a) {
   tip.innerHTML = `<strong>${esc(s.name)}</strong>Score ${s.score.toFixed(2)} &middot; ${esc(Z[s.zone].name)}` +
     (s.near ? `<span class="t-near">${esc(nearText(s.near))}</span>` : '') +
     (s.moved ? `<span class="t-moved ${s.moved}">${esc(movedText(s))}</span>` : '') +
+    (caseFor(s, cases) ? `<span class="t-case">Case: ${esc(stageLabel(caseFor(s, cases).stage))}</span>` : '') +
     `<span class="t-open">Open student details &rarr;</span>`;
   const r = a.getBoundingClientRect();
   const w = wrap.getBoundingClientRect();

@@ -57,6 +57,17 @@
     </section>
 
     <!-- Recent activity -->
+    <!-- Case status (only for Solar Flare Zone students, or an open case; handled by cases.js) -->
+    <section class="panel student-card case" id="case-section" hidden>
+      <div class="case-head">
+        <h2>Case</h2>
+        <span class="case-meta" id="case-meta"></span>
+      </div>
+      <ol class="case-path" id="case-path" aria-label="Case stages"></ol>
+      <p class="case-note" id="case-note"></p>
+      <p class="case-status" id="case-status" aria-live="polite"></p>
+    </section>
+
     <section class="panel student-card">
       <h2>Week by week</h2>
       <ul class="activity" id="activity">
@@ -95,7 +106,8 @@
       parseWeek, readScore, zoneFor, zoneName,
       weekList, previousWeek, studentsForWeek, nearText, movedText,
     } from './zones.js';
-    import { initNotes, setNotesWeek } from './notes.js';
+    import { initNotes, setNotesWeek, reloadNotes } from './notes.js';
+    import { initCaseStrip } from './cases.js';
 
     // 1. Read ?id=...&week=...&from=... from the URL (set by the dashboard links)
     const params = new URLSearchParams(window.location.search);
@@ -183,6 +195,15 @@
       const badge = document.getElementById('zone');
       badge.textContent = zone ? zoneName(zone) : 'No score';
       badge.className = 'badge' + (zone ? ' ' + zone : '');
+
+      // Case status strip (Solar Flare Zone, or a case that's still open)
+      initCaseStrip({
+        studentId: row.student_id,
+        zone,
+        zoneName: zone ? zoneName(zone) : 'no zone',
+        week: row.weekNum,
+        onHistory: reloadNotes,
+      });
 
       // Near a zone line / changed zone since the week before
       flagsList.innerHTML = '';
