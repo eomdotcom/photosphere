@@ -186,7 +186,8 @@ function planet(z, x, y, r, { count = 0, mini = false, label }) {
   </g>`;
 }
 
-// One student as an initials chip. It's a real link to their details page.
+// One student as a score chip (zoomed in). It's a real link to their details page.
+// The chip shows the rounded score; the name is in the tooltip and the side panel.
 function chip(s, x, y, r) {
   const z = Z[s.zone];
   const n = s.near;
@@ -201,7 +202,7 @@ function chip(s, x, y, r) {
     ${n ? `<circle class="halo" r="${r + 5}" style="stroke:${nz.color}"/>` : ''}
     <circle class="chip-focus" r="${r + 8}"/>
     <circle class="chip-bg" r="${r}"/>
-    <text class="chip-ini" dy=".35em" font-size="${Math.round(r * 0.68)}">${esc(initials(s.name))}</text>
+    <text class="chip-ini" dy=".35em" font-size="${Math.round(r * 0.74)}">${Math.round(s.score)}</text>
     ${n ? `<g transform="translate(${(r * 0.8).toFixed(1)} ${(-r * 0.8).toFixed(1)})">
       <circle r="${br}" fill="${nz.color}" stroke="#0a1230" stroke-width="1.5"/>
       <path d="${arrow}" fill="#0a1230" transform="scale(${(br / 6.5).toFixed(2)})"/>
@@ -209,59 +210,103 @@ function chip(s, x, y, r) {
   </a>`;
 }
 
-/* ---- Zoomed out: three planets + only the students near a zone line ---- */
-const OVERVIEW = { calm: { x: 230, y: 290 }, steady: { x: 600, y: 290 }, flare: { x: 970, y: 290 } };
-const radiusFor = n => 52 + Math.min(58, Math.sqrt(n) * 8.5);
-const MAX_PER_SIDE = 7;
+// "Julian Harris" -> "Julian H." (falls back to the full name if two would look the same)
+function shortNames(students) {
+  const short = s => {
+    const parts = s.name.trim().split(/\s+/);
+    return parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0]}.` : parts[0];
+  };
+  const counts = {};
+  students.forEach(s => { counts[short(s)] = (counts[short(s)] || 0) + 1; });
+  return new Map(students.map(s => [s.id, counts[short(s)] > 1 ? s.name : short(s)]));
+}
+
+// A name pill beside a zone line (zoomed out).
+// side: 'left' or 'right' of the line. Its gap from the line shows how far the score is from it.
+const PILL_H = 26;
+function pill(s, label, lineX, y, side) {
+  const z = Z[s.zone];
+  const n = s.near;
+  const gap = 6 + (Math.min(n.dist, MARGIN) / MARGIN) * 30; // 0 pts -> hugs the line, 5 pts -> 36px away
+  const w = Math.round(label.length * 7.4 + 22);
+  const x = side === 'left' ? lineX - gap - w : lineX + gap;
+  const aria = `${s.name}, score ${s.score.toFixed(2)}, ${z.name}, ${nearText(n)}. Open student details.`;
+  return `<a class="chip pill" href="${esc(studentUrl(s))}" data-id="${esc(s.id)}" aria-label="${esc(aria)}"
+      transform="translate(${x.toFixed(1)} ${(y - PILL_H / 2).toFixed(1)})" style="--zc:${z.color}">
+    <rect class="chip-focus" x="-5" y="-5" width="${w + 10}" height="${PILL_H + 10}" rx="${(PILL_H + 10) / 2}"/>
+    <rect class="chip-bg" width="${w}" height="${PILL_H}" rx="${PILL_H / 2}"/>
+    <text class="pill-text" x="${w / 2}" y="${PILL_H / 2}" dy=".35em">${esc(label)}</text>
+  </a>`;
+}
+
+/* ---- Zoomed out: three planets, and the students near each zone line beside that line ---- */
+const OVERVIEW = { calm: { x: 120, y: 270 }, steady: { x: 600, y: 270 }, flare: { x: 1080, y: 270 } };
+const radiusFor = n => 38 + Math.min(22, Math.sqrt(n) * 3.5);
+const ZONE_LINES = [
+  { value: CALM_MAX,   x: 370, below: 'calm',   above: 'steady' },
+  { value: STEADY_MAX, x: 830, below: 'steady', above: 'flare' },
+];
+const MAX_PER_SIDE = 8;
+const PILL_STEP = 32;
 
 function drawOverview() {
   const lists = zoneLists();
+  const names = shortNames(state.students);
   let svg = defs() + STARS;
 
+  // The planets
   ZONES.forEach(z => {
     const list = lists[z.key];
     const p = OVERVIEW[z.key];
-    const r = radiusFor(list.length);
-    const R = r + 46;
     const near = countNear(list);
-
-    svg += `<circle class="orbit" cx="${p.x}" cy="${p.y}" r="${R}"/>`;
-    svg += planet(z, p.x, p.y, r, {
+    svg += planet(z, p.x, p.y, radiusFor(list.length), {
       count: list.length,
       label: `${z.name}: ${list.length} students, ${near} near a zone line. Show everyone in this zone.`,
     });
+    svg += `<text class="lbl-name" x="${p.x}" y="430">${esc(z.name)}</text>`;
+    svg += `<text class="lbl-sub" x="${p.x}" y="453">${list.length} student${list.length === 1 ? '' : 's'}</text>`;
+  });
 
-    // Near-line students sit on the side of the orbit that faces the zone they're close to
-    const groups = {};
-    list.filter(s => s.near).forEach(s => (groups[s.near.toward] ||= []).push(s));
+  // The zone lines, with near-line students on their own zone's side
+  ZONE_LINES.forEach(line => {
+    const left = lists[line.below].filter(s => s.near && s.near.toward === line.above);
+    const right = lists[line.above].filter(s => s.near && s.near.toward === line.below);
 
-    Object.entries(groups).forEach(([toward, group]) => {
+    svg += `<text class="line-num" x="${line.x}" y="92">${line.value}</text>`;
+    svg += `<text class="line-cap" x="${line.x}" y="110">zone line</text>`;
+    svg += `<line class="zone-line" x1="${line.x}" y1="122" x2="${line.x}" y2="470"/>`;
+
+    if (!left.length && !right.length) {
+      svg += `<text class="line-cap" x="${line.x}" y="490">No one within ${MARGIN} points</text>`;
+      return;
+    }
+
+    [[left, 'left', line.below], [right, 'right', line.above]].forEach(([group, side, zoneKey]) => {
+      if (!group.length) return;
       group.sort((a, b) => a.near.dist - b.near.dist);
-      const centre = Z[toward].i > z.i ? 0 : 180; // right side or left side
-      const step = 25;
       const shown = group.slice(0, MAX_PER_SIDE);
       const extra = group.length - shown.length;
-      const slot = k => centre + (k === 0 ? 0 : (k % 2 ? 1 : -1) * Math.ceil(k / 2) * step);
+      const rows = shown.length + (extra > 0 ? 1 : 0);
+      const top = OVERVIEW.steady.y - ((rows - 1) * PILL_STEP) / 2;
 
       shown.forEach((s, k) => {
-        const a = slot(k) * Math.PI / 180;
-        svg += chip(s, p.x + R * Math.cos(a), p.y + R * Math.sin(a), 18);
+        svg += pill(s, names.get(s.id), line.x, top + k * PILL_STEP, side);
       });
 
       if (extra > 0) {
-        const a = slot(shown.length) * Math.PI / 180;
-        svg += `<g class="more" role="button" tabindex="0" data-zone="${z.key}"
-            aria-label="${extra} more near a zone line in ${esc(z.name)}. Show everyone."
-            transform="translate(${(p.x + R * Math.cos(a)).toFixed(1)} ${(p.y + R * Math.sin(a)).toFixed(1)})">
-          <circle r="18"/><text dy=".35em">+${extra}</text></g>`;
+        const y = top + shown.length * PILL_STEP;
+        const x = side === 'left' ? line.x - 6 - 70 : line.x + 6;
+        svg += `<g class="more" role="button" tabindex="0" data-zone="${zoneKey}"
+            aria-label="${extra} more near the ${line.value} line in ${esc(Z[zoneKey].name)}. Show everyone."
+            transform="translate(${x} ${(y - PILL_H / 2).toFixed(1)})">
+          <rect width="70" height="${PILL_H}" rx="${PILL_H / 2}"/>
+          <text x="35" y="${PILL_H / 2}" dy=".35em">+${extra} more</text></g>`;
       }
     });
-
-    svg += `<text class="lbl-name" x="${p.x}" y="502">${esc(z.name)}</text>`;
-    svg += `<text class="lbl-sub" x="${p.x}" y="526">${near ? `${near} near a zone line` : 'No one near a zone line'}</text>`;
   });
 
-  svg += `<text class="hint" x="600" y="606">Only students close to a zone line are shown. Select a planet or press + to see everyone.</text>`;
+  svg += `<text class="hint" x="600" y="560">Students within ${MARGIN} points of a zone line sit beside it. The closer to the line, the closer their score is to it.</text>`;
+  svg += `<text class="hint" x="600" y="582">Hover for the exact score. Select a planet or press + to see everyone.</text>`;
   stage.innerHTML = svg;
 }
 

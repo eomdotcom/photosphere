@@ -429,7 +429,37 @@ kbd {
   outline: none;
 }
 
-.more circle {
+.zone-line {
+  stroke: rgba(220, 230, 255, 0.45);
+  stroke-width: 2;
+  stroke-dasharray: 5 7;
+}
+
+.line-num {
+  fill: var(--text);
+  font: 800 22px "Segoe UI", Tahoma, sans-serif;
+  text-anchor: middle;
+}
+
+.line-cap {
+  fill: var(--soft);
+  font: 500 12px "Segoe UI", Tahoma, sans-serif;
+  text-anchor: middle;
+}
+
+.pill-text {
+  fill: #141230;
+  font: 700 12.5px "Segoe UI", Tahoma, sans-serif;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.pill .chip-bg {
+  stroke-width: 2.5;
+}
+
+.more circle,
+.more rect {
   fill: rgba(10, 16, 38, 0.7);
   stroke: rgba(200, 215, 255, 0.6);
   stroke-dasharray: 3 3;
@@ -443,7 +473,9 @@ kbd {
 }
 
 .more:hover circle,
-.more:focus-visible circle {
+.more:focus-visible circle,
+.more:hover rect,
+.more:focus-visible rect {
   stroke: #fff;
   stroke-width: 2.5;
 }
