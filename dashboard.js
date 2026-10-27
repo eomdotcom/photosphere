@@ -83,7 +83,7 @@ function showWeek(week) {
 function makeRow(s) {
   const li = document.createElement('li');
   const link = document.createElement('a');
-  link.href = `student.html?id=${encodeURIComponent(s.id)}&week=${currentWeek}`;
+  link.href = `student.html?id=${encodeURIComponent(s.id)}&week=${currentWeek}&from=list`;
 
   const ini = document.createElement('span');
   ini.className = 'ini';

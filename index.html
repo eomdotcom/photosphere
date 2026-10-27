@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -12,26 +11,41 @@
   <!-- Navbar -->
   <nav class="navbar">
     <span class="brand">Photosphere</span>
-    <a href="index.html">Upload data</a>
+    <a href="index.html" aria-current="page">Upload data</a>
     <a href="dashboard.html">Dashboard</a>
   </nav>
 
-  <main>
-    <h1>Upload Student Engagement Data</h1>
-    <p>Load a CSV file containing student engagement data.</p>
+  <main class="upload-main">
+    <h1>Upload student data</h1>
+    <p>Add a week of student engagement data, then open the dashboard to see who might need a closer look.</p>
+
+    <!-- How it works -->
+    <ol class="steps">
+      <li><strong>Choose a CSV file</strong>One file can hold one week or several.</li>
+      <li><strong>It's saved straight away</strong>Uploading a week again replaces only that week.</li>
+      <li><strong>Open the dashboard</strong>Pick a week and switch between List and Planets.</li>
+    </ol>
 
     <!-- File upload -->
     <section class="upload-box">
       <label for="file">Choose a CSV file</label>
       <input type="file" id="file" accept=".csv">
+      <p class="hint">
+        Needs these columns:
+        <span class="cols">
+          <code>student_id</code><code>student_name</code><code>week</code><code>concern_score</code>
+        </span>
+      </p>
     </section>
 
-    <!-- Shows messages such as "Saved: 24 students" or an error -->
-    <p id="status">No dataset loaded yet.</p>
+    <!-- Shows messages such as "Saved 60 rows for week 3" or an error -->
+    <p id="status" aria-live="polite">No dataset loaded yet.</p>
 
     <!-- Buttons -->
-    <button id="open-dashboard" disabled>Open the dashboard</button>
-    <button id="delete-data">Delete the saved dataset</button>
+    <div class="upload-actions">
+      <button id="open-dashboard" disabled>Open the dashboard &rarr;</button>
+      <button id="delete-data" class="danger">Delete all saved data</button>
+    </div>
   </main>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>

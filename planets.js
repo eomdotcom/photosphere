@@ -108,7 +108,7 @@ function showWeek(week) {
 const esc = s => String(s).replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-const studentUrl = s => `student.html?id=${encodeURIComponent(s.id)}&week=${state.week}`;
+const studentUrl = s => `student.html?id=${encodeURIComponent(s.id)}&week=${state.week}&from=planets`;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
