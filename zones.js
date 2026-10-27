@@ -65,6 +65,47 @@ export function initials(name) {
   return ((parts[0]?.[0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
 }
 
+// Initials that are unique within one week, so two students never share a label.
+// One rule for every duplicate: add a small middle letter that tells them apart.
+//   Julian Harris -> JuH, James Harris -> JaH
+//   Nora Martin -> NrM, Noah Martinez -> NaM, Nova Morris -> NvM  (2nd letters all "o", so use the 3rd)
+//   Jack Hill -> JiH, Jack Hall -> JaH                             (same first name, so use the surname)
+// Returns a Map of student id -> label.
+export function uniqueInitials(students) {
+  const groups = new Map();
+  students.forEach(s => {
+    const key = initials(s.name);
+    groups.set(key, [...(groups.get(key) || []), s]);
+  });
+
+  const labels = new Map();
+  groups.forEach((group, key) => {
+    if (group.length === 1) {
+      labels.set(group[0].id, key);
+      return;
+    }
+
+    const parts = s => String(s.name).trim().toLowerCase().split(/\s+/);
+    const firstNames = group.map(s => parts(s)[0] || '');
+    const surnames = group.map(s => { const p = parts(s); return p.length > 1 ? p[p.length - 1] : ''; });
+
+    // The first letter position (after the initial) where every name in the group differs
+    const pick = words => {
+      const longest = Math.max(...words.map(w => w.length));
+      for (let i = 1; i < longest; i++) {
+        const letters = words.map(w => w[i] || '');
+        if (letters.every(l => l) && new Set(letters).size === words.length) return letters;
+      }
+      return null;
+    };
+    const middle = pick(firstNames) || pick(surnames) ||
+      firstNames.map(w => w[1] || ''); // identical names: best effort
+
+    group.forEach((s, i) => labels.set(s.id, key[0] + middle[i] + key.slice(1)));
+  });
+  return labels;
+}
+
 export const zoneIndex = key => ZONES.findIndex(z => z.key === key);
 
 // Every week in the data, in order: [1, 3, 5]
@@ -139,4 +180,26 @@ export function updateViewSwitch(week) {
     const page = a.getAttribute('href').split('?')[0];
     a.setAttribute('href', `${page}?week=${week}`);
   });
+}
+
+// The summary chips under the week buttons, e.g.
+// [60 students] [10 near a zone line] [5 changed zone since week 3]
+export function renderSummary(el, { total, near, moved, prevWeek, skipped, note }) {
+  el.innerHTML = '';
+  const add = (count, text, kind) => {
+    const chip = document.createElement('span');
+    chip.className = 'stat' + (kind ? ' ' + kind : '');
+    if (count !== null) {
+      const b = document.createElement('b');
+      b.textContent = count;
+      chip.append(b, ' ');
+    }
+    chip.append(text);
+    el.appendChild(chip);
+  };
+  add(total, total === 1 ? 'student' : 'students');
+  add(near, 'near a zone line', 'stat-near');
+  if (prevWeek !== null) add(moved, `changed zone since week ${prevWeek}`, 'stat-moved');
+  if (skipped) add(skipped, 'skipped (no score)', 'stat-warn');
+  if (note) add(null, note, 'stat-note');
 }

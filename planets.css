@@ -42,7 +42,7 @@
 }
 
 .pl-search input {
-  width: 220px;
+  width: 14rem;
   padding: 0.7rem 1rem;
   font-weight: 400;
   border-radius: 12px;
@@ -108,13 +108,13 @@
 }
 
 #planet-status {
-  margin: 1rem 0 1.2rem;
+  margin-bottom: 1.2rem;
 }
 
 /* Stage + side panel */
 .pl-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 320px;
+  grid-template-columns: minmax(0, 1fr) clamp(19rem, 22vw, 26rem);
   gap: 1.2rem;
 }
 
@@ -197,7 +197,7 @@
 
 .pl-rows a {
   display: grid;
-  grid-template-columns: 28px 1fr auto 16px;
+  grid-template-columns: 1.8rem 1fr auto 1rem;
   align-items: center;
   gap: 0.5rem;
   padding: 0.3rem 0.4rem;
@@ -215,12 +215,12 @@
 .pl-ini {
   display: grid;
   place-items: center;
-  width: 26px;
-  height: 26px;
+  width: 1.65rem;
+  height: 1.65rem;
   border-radius: 50%;
   background: #f4e4c4;
   color: #141230;
-  font: 800 10px/1 "Segoe UI", Tahoma, sans-serif;
+  font: 800 0.65rem/1 "Segoe UI", Tahoma, sans-serif;
   box-shadow: 0 0 0 2px var(--c);
 }
 
@@ -257,7 +257,7 @@
 
 .lbl-moved {
   fill: var(--amber);
-  font: 600 12px "Segoe UI", Tahoma, sans-serif;
+  font: 600 16px "Segoe UI", Tahoma, sans-serif;
   text-anchor: middle;
 }
 
@@ -511,12 +511,12 @@ kbd {
   stroke-width: 3px;
 }
 
-.lbl-name  { fill: var(--text);  font: 800 22px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
-.lbl-sub   { fill: var(--soft);  font: 500 14px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
-.lbl-title { fill: var(--text);  font: 800 26px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
-.mini-name { fill: var(--text);  font: 700 14px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
-.mini-sub  { fill: var(--soft);  font: 500 12px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
-.hint      { fill: rgba(170, 185, 230, 0.6); font: 500 13px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.lbl-name  { fill: var(--text);  font: 800 24px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.lbl-sub   { fill: var(--muted); font: 500 18px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.lbl-title { fill: var(--text);  font: 800 30px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.mini-name { fill: var(--text);  font: 700 18px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.mini-sub  { fill: var(--muted); font: 500 16px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.hint      { fill: rgba(190, 205, 240, 0.75); font: 500 16px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
 .chart-ref { fill: rgba(170, 185, 230, 0.35); font: 11px Consolas, monospace; letter-spacing: 0.12em; }
 
 .chip {
@@ -577,19 +577,19 @@ kbd {
 
 .line-num {
   fill: var(--text);
-  font: 800 22px "Segoe UI", Tahoma, sans-serif;
+  font: 800 28px "Segoe UI", Tahoma, sans-serif;
   text-anchor: middle;
 }
 
 .line-cap {
-  fill: var(--soft);
-  font: 500 12px "Segoe UI", Tahoma, sans-serif;
+  fill: var(--muted);
+  font: 500 15px "Segoe UI", Tahoma, sans-serif;
   text-anchor: middle;
 }
 
 .pill-text {
   fill: #141230;
-  font: 700 12.5px "Segoe UI", Tahoma, sans-serif;
+  font: 700 15px "Segoe UI", Tahoma, sans-serif;
   text-anchor: middle;
   pointer-events: none;
 }
@@ -608,7 +608,7 @@ kbd {
 
 .more text {
   fill: var(--text);
-  font: 700 12px "Segoe UI", Tahoma, sans-serif;
+  font: 700 15px "Segoe UI", Tahoma, sans-serif;
   text-anchor: middle;
 }
 
@@ -651,4 +651,10 @@ kbd {
   #stage {
     transition: none;
   }
+}
+
+/* Three-letter initials (e.g. JuH / JaH when two students share initials) */
+.ini-3 {
+  font-size: 0.55rem !important;
+  letter-spacing: -0.02em;
 }

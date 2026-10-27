@@ -1,5 +1,4 @@
 <!DOCTYPE html>
-
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -13,10 +12,13 @@
   <nav class="navbar">
     <span class="brand">Photosphere</span>
     <a href="index.html">Upload data</a>
-    <a href="dashboard.html">Dashboard</a>
+    <a href="dashboard.html" aria-current="page">Dashboard</a>
   </nav>
 
   <main>
+    <!-- Goes back to the same week and view (List or Planets) you came from -->
+    <a class="back-link" id="back" href="dashboard.html">&larr; Back to dashboard</a>
+
     <h1>Student details</h1>
     <p>A zone is a prompt to look closer, not a decision about a student.</p>
 
@@ -29,6 +31,9 @@
         Course <span id="course">--</span> &middot;
         Week <span id="week">--</span>
       </p>
+
+      <!-- Near a zone line / changed zone (filled in only when it applies) -->
+      <ul class="student-flags" id="flags"></ul>
 
       <!-- Key indicators at the selected checkpoint -->
       <div class="metric-grid">
@@ -51,11 +56,10 @@
       </div>
     </section>
 
-
     <!-- Recent activity -->
     <section class="panel student-card">
-      <h2>Recent activity</h2>
-      <ul class="student-list" id="activity">
+      <h2>Week by week</h2>
+      <ul class="activity" id="activity">
         <li>Activity will appear here once a dataset is loaded.</li>
       </ul>
     </section>
@@ -64,34 +68,27 @@
     <section class="panel student-card">
       <h2>Adviser notes</h2>
       <label for="notes">Record your own view</label>
-      <textarea id="notes" rows="4"></textarea>
+      <textarea id="notes" rows="4" placeholder="What did you notice, and what will you do next?"></textarea>
       <button id="save-note">Save note</button>
     </section>
   </main>
 
   <script type="module">
     import { supabase } from './supabase.js';
+    import {
+      parseWeek, readScore, zoneFor, zoneName,
+      weekList, previousWeek, studentsForWeek, nearText, movedText,
+    } from './zones.js';
 
-    // 1. Read ?id=...&week=... from the URL (set by the dashboard links)
+    // 1. Read ?id=...&week=...&from=... from the URL (set by the dashboard links)
     const params = new URLSearchParams(window.location.search);
     const studentId = params.get('id');
     const requestedWeek = params.get('week');
 
-    // Same week parsing as the dashboard: 5, "5" or "Week 5" -> 5
-    function parseWeek(value) {
-      if (value === null || value === undefined) return null;
-      const match = String(value).match(/\d+/);
-      return match ? Number(match[0]) : null;
-    }
-
-    // Same thresholds as the dashboard
-    function zoneFor(score) {
-      if (score === null || score === '' || Number.isNaN(Number(score))) return null;
-      const s = Number(score);
-      if (s <= 30) return { name: 'Calm Orbit', cls: 'calm' };
-      if (s <= 60) return { name: 'Steady Star', cls: 'steady' };
-      return { name: 'Solar Flare Zone', cls: 'flare' };
-    }
+    // Which dashboard view to go back to: the one in the URL, or the page we came from
+    const from = params.get('from') ||
+      (document.referrer.includes('planets.html') ? 'planets' : 'list');
+    const dashboardPage = from === 'planets' ? 'planets.html' : 'dashboard.html';
 
     // Shows "--" for empty values instead of "null" or "undefined"
     function setText(id, value) {
@@ -100,20 +97,25 @@
     }
 
     const activityList = document.getElementById('activity');
+    const flagsList = document.getElementById('flags');
+
+    function setBackLink(week) {
+      const back = document.getElementById('back');
+      back.href = week ? `${dashboardPage}?week=${week}` : dashboardPage;
+      back.textContent = `← Back to dashboard${week ? ` (week ${week})` : ''}`;
+    }
 
     function showMessage(title, message) {
       setText('student-name', title);
       activityList.innerHTML = '';
       const li = document.createElement('li');
-      li.append(message + ' ');
-      const a = document.createElement('a');
-      a.href = 'dashboard.html';
-      a.textContent = 'Back to the dashboard';
-      li.appendChild(a);
+      li.textContent = message;
       activityList.appendChild(li);
     }
 
     async function loadStudent() {
+      setBackLink(parseWeek(requestedWeek));
+
       // Opened from the navbar, with no student chosen
       if (!studentId) {
         showMessage('No student selected', 'Pick a student from the dashboard.');
@@ -125,9 +127,6 @@
         .from('students')
         .select('*')
         .eq('student_id', studentId);
-
-      // TRACE: remove once it works
-      console.log('Student id:', studentId, 'week:', requestedWeek, 'rows:', data, 'error:', error);
 
       if (error) {
         showMessage('Could not load student', error.message + '.');
@@ -150,6 +149,8 @@
     }
 
     function render(row, rows) {
+      setBackLink(row.weekNum);
+
       // Profile
       document.title = `Photosphere - ${row.student_name ?? 'Student'}`;
       setText('student-name', row.student_name);
@@ -157,41 +158,73 @@
       setText('course', row.course_code);
       setText('week', row.weekNum);
 
-      // Zone badge
-      const zone = zoneFor(row.concern_score);
+      // Zone badge (same rules as both dashboard views, from zones.js)
+      const score = readScore(row.concern_score);
+      const zone = score === null ? null : zoneFor(score);
       const badge = document.getElementById('zone');
-      badge.textContent = zone ? zone.name : 'No score';
-      badge.className = 'badge' + (zone ? ' ' + zone.cls : '');
+      badge.textContent = zone ? zoneName(zone) : 'No score';
+      badge.className = 'badge' + (zone ? ' ' + zone : '');
+
+      // Near a zone line / changed zone since the week before
+      flagsList.innerHTML = '';
+      const weeks = weekList(rows);
+      const { students } = studentsForWeek(rows, row.weekNum, previousWeek(weeks, row.weekNum));
+      const s = students[0];
+      if (s?.near) addFlag(`Near a zone line: ${nearText(s.near)}`);
+      if (s?.moved) addFlag(movedText(s), s.moved);
 
       // Metric cards
-      setText('concern-score', row.concern_score);
+      setText('concern-score', score === null ? null : score.toFixed(2));
       setText('assessments', row.quiz_attempts);
       setText('logins', row.distinct_logins_per_week);
       setText('check-in', row.days_since_last_check_in);
 
-      // Recent activity: one line per week, each a link to that week
+      // Week by week: one line per week, each a link to that week
       activityList.innerHTML = '';
       rows.forEach(r => {
-        const z = zoneFor(r.concern_score);
+        const rScore = readScore(r.concern_score);
+        const rZone = rScore === null ? null : zoneFor(rScore);
         const li = document.createElement('li');
-        const label = `Week ${r.weekNum}: score ${r.concern_score ?? '--'} (${z ? z.name : 'no score'})`;
 
+        const dot = document.createElement('span');
+        dot.className = 'dot' + (rZone ? ' ' + rZone : '');
+        dot.setAttribute('aria-hidden', 'true');
+
+        const label = `Week ${r.weekNum}: ${rZone ? zoneName(rZone) : 'no score'}`;
+        let main;
         if (r === row) {
-          const strong = document.createElement('strong');
-          strong.textContent = label;
-          li.append(strong, ' (viewing)');
+          main = document.createElement('strong');
+          main.textContent = label;
         } else {
-          const a = document.createElement('a');
-          a.href = `student.html?id=${encodeURIComponent(r.student_id)}&week=${r.weekNum}`;
-          a.textContent = label;
-          li.appendChild(a);
+          main = document.createElement('a');
+          main.href = `student.html?id=${encodeURIComponent(r.student_id)}&week=${r.weekNum}&from=${from}`;
+          main.textContent = label;
         }
+
+        const scoreEl = document.createElement('span');
+        scoreEl.className = 'score';
+        scoreEl.textContent = rScore === null ? '--' : rScore.toFixed(2);
+
+        li.append(dot, main);
+        if (r === row) {
+          const viewing = document.createElement('span');
+          viewing.className = 'viewing';
+          viewing.textContent = 'viewing';
+          li.appendChild(viewing);
+        }
+        li.appendChild(scoreEl);
         activityList.appendChild(li);
       });
+    }
+
+    function addFlag(text, direction) {
+      const li = document.createElement('li');
+      if (direction) li.className = direction;
+      li.textContent = text;
+      flagsList.appendChild(li);
     }
 
     loadStudent();
   </script>
 </body>
 </html>
-

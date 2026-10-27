@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 import {
   CALM_MAX, STEADY_MAX, MARGIN, ZONES as BASE_ZONES,
   parseWeek, weekList, previousWeek, studentsForWeek,
-  nearText, movedTag, movedText, initials, updateViewSwitch,
+  nearText, movedTag, movedText, uniqueInitials, updateViewSwitch, renderSummary,
 } from './zones.js';
 
 /* ================= SETTINGS =================
@@ -31,6 +31,7 @@ const state = {
   weeks: [],         // every week in the data, e.g. [1, 3, 5]
   week: null,
   prevWeek: null,    // the week before, to compare zones with
+  labels: new Map(), // student id -> unique initials for this week
   students: [],      // this week's students: { id, name, score, zone, near }
   mode: 'overview',  // 'overview' (zoomed out) or 'zoom' (zoomed in)
   focus: null,       // which zone is zoomed in
@@ -90,25 +91,33 @@ function showWeek(week) {
   state.students = students;
 
   byId = new Map(state.students.map(s => [s.id, s]));
+  state.labels = uniqueInitials(state.students);
   $('student-names').innerHTML = state.students
     .map(s => `<option value="${esc(s.name)}">`).join('');
 
-  const nearCount = state.students.filter(s => s.near).length;
-  statusEl.textContent = `Showing week ${week}: ${state.students.length} students, ` +
-    `${nearCount} within ${MARGIN} points of a zone line` +
-    (state.prevWeek !== null
-      ? `, ${state.students.filter(s => s.moved).length} changed zone since week ${state.prevWeek}`
-      : '') +
-    (skipped ? ` (${skipped} skipped, no score)` : '');
+  state.skipped = skipped;
+  showSummary();
 
   draw();
+}
+
+// Summary chips under the week buttons (an optional note, e.g. "No match for …")
+function showSummary(note = null) {
+  renderSummary(statusEl, {
+    total: state.students.length,
+    near: state.students.filter(s => s.near).length,
+    moved: state.students.filter(s => s.moved).length,
+    prevWeek: state.prevWeek,
+    skipped: state.skipped,
+    note,
+  });
 }
 
 /* ================= HELPERS ================= */
 const esc = s => String(s).replace(/[&<>"']/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
-const studentUrl = s => `student.html?id=${encodeURIComponent(s.id)}&week=${state.week}`;
+const studentUrl = s => `student.html?id=${encodeURIComponent(s.id)}&week=${state.week}&from=planets`;
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const wait = ms => new Promise(r => setTimeout(r, ms));
 
@@ -186,16 +195,18 @@ function planet(z, x, y, r, { count = 0, mini = false, label }) {
       transform="rotate(-32 ${-r * 0.38} ${-r * 0.42})"/>
     ${ring ? `<path transform="rotate(-16)" d="M ${-ring.rx} 0 A ${ring.rx} ${ring.ry} 0 0 0 ${ring.rx} 0" fill="none" stroke="${z.light}" stroke-opacity=".85" stroke-width="${sw}"/>` : ''}
     <circle class="planet-sel" r="${r + 7}" fill="none" stroke="#fff" stroke-width="2" stroke-dasharray="4 6"/>
-    ${mini ? '' : `
-      <text class="planet-count" y="${(r * 0.1).toFixed(1)}" font-size="${Math.round(r * 0.46)}">${count}</text>
-      <text class="planet-unit" y="${(r * 0.4).toFixed(1)}" font-size="${Math.max(11, Math.round(r * 0.15))}">student${count === 1 ? '' : 's'}</text>`}
+    ${mini ? '' : (r < 70
+      ? `<text class="planet-count" dy=".35em" font-size="${Math.round(r * 0.6)}">${count}</text>`
+      : `<text class="planet-count" y="${(r * 0.1).toFixed(1)}" font-size="${Math.round(r * 0.46)}">${count}</text>
+      <text class="planet-unit" y="${(r * 0.4).toFixed(1)}" font-size="${Math.round(r * 0.17)}">student${count === 1 ? '' : 's'}</text>`)}
   </g>`;
 }
 
-// One student as a score chip (zoomed in). It's a real link to their details page.
-// The chip shows the rounded score; the name is in the tooltip and the side panel.
+// One student as an initials chip (zoomed in). It's a real link to their details page.
+// Same initials as the side panel and list; the score is in the tooltip and side panel.
 function chip(s, x, y, r) {
   const z = Z[s.zone];
+  const ini = state.labels.get(s.id);
   const n = s.near;
   const nz = n ? Z[n.toward] : null;
   const label = `${s.name}, score ${s.score.toFixed(2)}, ${z.name}${n ? `, ${nearText(n)}` : ''}. Open student details.`;
@@ -208,7 +219,7 @@ function chip(s, x, y, r) {
     ${n ? `<circle class="halo" r="${r + 5}" style="stroke:${nz.color}"/>` : ''}
     <circle class="chip-focus" r="${r + 8}"/>
     <circle class="chip-bg" r="${r}"/>
-    <text class="chip-ini" dy=".35em" font-size="${Math.round(r * 0.74)}">${Math.round(s.score)}</text>
+    <text class="chip-ini" dy=".35em" font-size="${Math.round(r * (ini.length > 2 ? 0.62 : 0.78))}">${esc(ini)}</text>
     ${n ? `<g transform="translate(${(r * 0.8).toFixed(1)} ${(-r * 0.8).toFixed(1)})">
       <circle r="${br}" fill="${nz.color}" stroke="#0a1230" stroke-width="1.5"/>
       <path d="${arrow}" fill="#0a1230" transform="scale(${(br / 6.5).toFixed(2)})"/>
@@ -229,12 +240,12 @@ function shortNames(students) {
 
 // A name pill beside a zone line (zoomed out).
 // side: 'left' or 'right' of the line. Its gap from the line shows how far the score is from it.
-const PILL_H = 26;
+const PILL_H = 32;
 function pill(s, label, lineX, y, side) {
   const z = Z[s.zone];
   const n = s.near;
   const gap = 6 + (Math.min(n.dist, MARGIN) / MARGIN) * 30; // 0 pts -> hugs the line, 5 pts -> 36px away
-  const w = Math.round(label.length * 7.4 + 22);
+  const w = Math.round(label.length * 8.6 + 24);
   const x = side === 'left' ? lineX - gap - w : lineX + gap;
   const aria = `${s.name}, score ${s.score.toFixed(2)}, ${z.name}, ${nearText(n)}. Open student details.`;
   return `<a class="chip pill" href="${esc(studentUrl(s))}" data-id="${esc(s.id)}" aria-label="${esc(aria)}"
@@ -246,14 +257,14 @@ function pill(s, label, lineX, y, side) {
 }
 
 /* ---- Zoomed out: three planets, and the students near each zone line beside that line ---- */
-const OVERVIEW = { calm: { x: 120, y: 270 }, steady: { x: 600, y: 270 }, flare: { x: 1080, y: 270 } };
+const OVERVIEW = { calm: { x: 105, y: 270 }, steady: { x: 600, y: 270 }, flare: { x: 1080, y: 270 } };
 const radiusFor = n => 38 + Math.min(22, Math.sqrt(n) * 3.5);
 const ZONE_LINES = [
-  { value: CALM_MAX,   x: 370, below: 'calm',   above: 'steady' },
-  { value: STEADY_MAX, x: 830, below: 'steady', above: 'flare' },
+  { value: CALM_MAX,   x: 350, below: 'calm',   above: 'steady' },
+  { value: STEADY_MAX, x: 850, below: 'steady', above: 'flare' },
 ];
-const MAX_PER_SIDE = 8;
-const PILL_STEP = 32;
+const MAX_PER_SIDE = 7;
+const PILL_STEP = 38;
 
 function drawOverview() {
   const lists = zoneLists();
@@ -269,11 +280,11 @@ function drawOverview() {
       count: list.length,
       label: `${z.name}: ${list.length} students, ${near} near a zone line. Show everyone in this zone.`,
     });
-    svg += `<text class="lbl-name" x="${p.x}" y="430">${esc(z.name)}</text>`;
-    svg += `<text class="lbl-sub" x="${p.x}" y="453">${list.length} student${list.length === 1 ? '' : 's'}</text>`;
+    svg += `<text class="lbl-name" x="${p.x}" y="452">${esc(z.name)}</text>`;
+    svg += `<text class="lbl-sub" x="${p.x}" y="480">${list.length} student${list.length === 1 ? '' : 's'}</text>`;
     const movedIn = list.filter(s => s.moved).length;
     if (state.prevWeek !== null) {
-      svg += `<text class="lbl-moved" x="${p.x}" y="474">${movedIn ? `${movedIn} new since week ${state.prevWeek}` : `No change since week ${state.prevWeek}`}</text>`;
+      svg += `<text class="lbl-moved" x="${p.x}" y="506">${movedIn ? `${movedIn} new since week ${state.prevWeek}` : `No change since week ${state.prevWeek}`}</text>`;
     }
   });
 
@@ -282,12 +293,12 @@ function drawOverview() {
     const left = lists[line.below].filter(s => s.near && s.near.toward === line.above);
     const right = lists[line.above].filter(s => s.near && s.near.toward === line.below);
 
-    svg += `<text class="line-num" x="${line.x}" y="92">${line.value}</text>`;
+    svg += `<text class="line-num" x="${line.x}" y="88">${line.value}</text>`;
     svg += `<text class="line-cap" x="${line.x}" y="110">zone line</text>`;
-    svg += `<line class="zone-line" x1="${line.x}" y1="122" x2="${line.x}" y2="470"/>`;
+    svg += `<line class="zone-line" x1="${line.x}" y1="124" x2="${line.x}" y2="420"/>`;
 
     if (!left.length && !right.length) {
-      svg += `<text class="line-cap" x="${line.x}" y="490">No one within ${MARGIN} points</text>`;
+      svg += `<text class="line-cap" x="${line.x}" y="275">No one within ${MARGIN} points</text>`;
       return;
     }
 
@@ -305,17 +316,17 @@ function drawOverview() {
 
       if (extra > 0) {
         const y = top + shown.length * PILL_STEP;
-        const x = side === 'left' ? line.x - 6 - 70 : line.x + 6;
+        const x = side === 'left' ? line.x - 6 - 90 : line.x + 6;
         svg += `<g class="more" role="button" tabindex="0" data-zone="${zoneKey}"
             aria-label="${extra} more near the ${line.value} line in ${esc(Z[zoneKey].name)}. Show everyone."
             transform="translate(${x} ${(y - PILL_H / 2).toFixed(1)})">
-          <rect width="70" height="${PILL_H}" rx="${PILL_H / 2}"/>
-          <text x="35" y="${PILL_H / 2}" dy=".35em">+${extra} more</text></g>`;
+          <rect width="90" height="${PILL_H}" rx="${PILL_H / 2}"/>
+          <text x="45" y="${PILL_H / 2}" dy=".35em">+${extra} more</text></g>`;
       }
     });
   });
 
-  svg += `<text class="hint" x="600" y="560">Hover a name for the exact score &#183; select a planet to see everyone &#183; help below the chart</text>`;
+  svg += `<text class="hint" x="600" y="590">Hover a name for the exact score &#183; select a planet to see everyone &#183; help below the chart</text>`;
   stage.innerHTML = svg;
 }
 
@@ -352,12 +363,12 @@ function drawZoom(key) {
     const p = corners[j];
     const n = lists[o.key].length;
     svg += planet(o, p.x, p.y, 34, { mini: true, label: `Switch to ${o.name}, ${n} students` });
-    svg += `<text class="mini-name" x="${p.x}" y="${p.y + 62}">${esc(o.name)}</text>`;
-    svg += `<text class="mini-sub" x="${p.x}" y="${p.y + 80}">${n} students</text>`;
+    svg += `<text class="mini-name" x="${p.x}" y="${p.y + 66}">${esc(o.name)}</text>`;
+    svg += `<text class="mini-sub" x="${p.x}" y="${p.y + 88}">${n} students</text>`;
   });
 
-  const cx = 600, cy = 330, pr = 92, cr = 15;
-  const rings = ringLayout(list.length, 145, 37, 37);
+  const cx = 600, cy = 340, pr = 88, cr = 18;
+  const rings = ringLayout(list.length, 140, 44, 44);
   rings.forEach(rg => { svg += `<circle class="orbit" cx="${cx}" cy="${cy}" r="${rg.r}"/>`; });
   svg += planet(z, cx, cy, pr, { count: list.length, label: `${z.name}, ${list.length} students. Back to all planets.` });
 
@@ -381,7 +392,7 @@ function row(s) {
   const z = Z[s.zone];
   const n = s.near;
   return `<li><a href="${esc(studentUrl(s))}" data-id="${esc(s.id)}" style="--c:${z.color}">
-    <span class="pl-ini" aria-hidden="true">${esc(initials(s.name))}</span>
+    <span class="pl-ini${state.labels.get(s.id).length > 2 ? ' ini-3' : ''}" aria-hidden="true">${esc(state.labels.get(s.id))}</span>
     <span class="pl-who"><span class="pl-name">${esc(s.name)}</span>${s.moved ? `<span class="moved ${s.moved}" title="${esc(movedText(s))}">${esc(movedTag(s))}</span>` : ''}</span>
     <span class="pl-score">${s.score.toFixed(2)}</span>
     <span class="pl-arrow" style="--c:${n ? Z[n.toward].color : 'transparent'}" ${n ? `title="${esc(nearText(n))}"` : ''}>${n ? (n.dir === 'up' ? '&#9650;' : '&#9660;') : ''}<span class="sr-only">${n ? ', ' + esc(nearText(n)) : ''}</span></span>
@@ -621,9 +632,10 @@ async function findStudent() {
   const s = state.students.find(s => s.name.toLowerCase() === q) ||
             state.students.find(s => s.name.toLowerCase().includes(q));
   if (!s) {
-    statusEl.textContent = `No student matching "${find.value}" in week ${state.week}.`;
+    showSummary(`No student matching “${find.value.trim()}” this week`);
     return;
   }
+  showSummary();
   await zoomTo(s.zone);
   const a = stage.querySelector(`.chip[data-id="${CSS.escape(s.id)}"]`);
   if (a) {
@@ -669,7 +681,7 @@ function drawHelp() {
     </div>
     <div class="pl-help-item">
       <h3>Explore</h3>
-      <p>Select a planet or <strong>Everyone</strong> to see every student in a zone, shown by score.
+      <p>Select a planet or <strong>Everyone</strong> to see every student in a zone, highest score first.
         Hover a name for details, select it to open their page.</p>
       <p class="pl-help-soft"><kbd>+</kbd> <kbd>&minus;</kbd> zoom &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> next planet &middot; <kbd>Esc</kbd> back</p>
     </div>`;
