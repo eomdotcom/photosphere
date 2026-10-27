@@ -1,0 +1,484 @@
+/* Planet view only. Loaded after styles.css, so it reuses the same colours,
+   fonts, navbar and week buttons, and only adds what the planets need. */
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.planets-main {
+  max-width: 1280px;
+}
+
+.navbar a[aria-current="page"] {
+  color: var(--text);
+  border-color: rgba(122, 215, 255, 0.35);
+}
+
+/* Toolbar: weeks on the left, search + zoom on the right */
+.pl-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.9rem 1.2rem;
+  margin-top: 1.5rem;
+}
+
+.pl-toolbar .weeks {
+  margin-top: 0;
+}
+
+.pl-toolbar .weeks button {
+  margin: 0;
+}
+
+.pl-tools {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.pl-search {
+  display: block;
+  margin: 0;
+  font-weight: 400;
+}
+
+.pl-search input {
+  width: 220px;
+  padding: 0.7rem 1rem;
+  font-weight: 400;
+  border-radius: 12px;
+  border: 1px solid rgba(122, 215, 255, 0.25);
+  background: rgba(9, 15, 27, 0.75);
+  color: var(--text);
+  font: inherit;
+}
+
+.pl-search input::placeholder {
+  color: var(--soft);
+}
+
+/* Reset the global button style for the planet controls */
+.pl-btn,
+.pl-zone-btn {
+  margin: 0;
+  color: var(--text);
+  background: rgba(15, 24, 42, 0.7);
+  border: 1px solid rgba(155, 141, 255, 0.28);
+  box-shadow: none;
+  border-radius: 12px;
+  padding: 0.8rem 1rem;
+  font: 700 0.95rem/1 "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.pl-btn:hover:not(:disabled),
+.pl-btn:focus-visible:not(:disabled),
+.pl-zone-btn:hover,
+.pl-zone-btn:focus-visible {
+  transform: none;
+  filter: none;
+  box-shadow: none;
+  border-color: var(--blue);
+}
+
+.pl-zoom {
+  display: flex;
+}
+
+.pl-zoom .pl-btn:first-child {
+  border-radius: 12px 0 0 12px;
+}
+
+.pl-zoom .pl-btn:last-child {
+  border-radius: 0 12px 12px 0;
+  border-left: 0;
+}
+
+.pl-btn:focus-visible,
+.pl-zone-btn:focus-visible,
+.pl-search input:focus-visible,
+.pl-rows a:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: 2px;
+}
+
+#planet-status {
+  margin: 1rem 0 1.2rem;
+}
+
+/* Stage + side panel */
+.pl-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 1.2rem;
+}
+
+.pl-stage,
+.pl-side {
+  position: relative;
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  box-shadow: var(--shadow);
+}
+
+.pl-stage {
+  overflow: hidden;
+}
+
+#stage {
+  display: block;
+  width: 100%;
+  height: auto;
+  transition: opacity 0.25s;
+}
+
+#stage.fading {
+  opacity: 0.1;
+}
+
+.pl-side-inner {
+  position: absolute;
+  inset: 0;
+  overflow: auto;
+  padding: 1.2rem 1.1rem;
+}
+
+.pl-side h2 {
+  font-size: 1.3rem;
+  margin-bottom: 0.3rem;
+}
+
+.pl-side h3 {
+  margin: 1.1rem 0 0.4rem;
+  font-size: 0.9rem;
+  line-height: 1.4;
+}
+
+.pl-side h3 .pl-dot {
+  display: inline-block;
+  margin-right: 0.45rem;
+  vertical-align: 0;
+}
+
+.pl-side h3 .pl-soft {
+  color: var(--soft);
+  font-weight: 500;
+}
+
+.pl-side p {
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.pl-dot {
+  flex: none;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--c);
+  box-shadow: 0 0 10px var(--c);
+}
+
+.pl-rows {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pl-rows li {
+  margin: 0;
+}
+
+.pl-rows a {
+  display: grid;
+  grid-template-columns: 28px 1fr auto 16px;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0.4rem;
+  border-radius: 9px;
+  font-size: 0.9rem;
+  color: var(--text);
+}
+
+.pl-rows a:hover,
+.pl-rows a.is-hot {
+  text-decoration: none;
+  background: rgba(122, 215, 255, 0.1);
+}
+
+.pl-ini {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #f4e4c4;
+  color: #141230;
+  font: 800 10px/1 "Segoe UI", Tahoma, sans-serif;
+  box-shadow: 0 0 0 2px var(--c);
+}
+
+.pl-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--blue);
+}
+
+.pl-score {
+  font-size: 0.82rem;
+  color: var(--soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.pl-arrow {
+  font-size: 0.75rem;
+  text-align: center;
+  color: var(--c);
+}
+
+.pl-back {
+  margin-bottom: 0.9rem;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.85rem;
+}
+
+.pl-zone-btns {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.2rem;
+}
+
+.pl-zone-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  font-weight: 600;
+  font-size: 0.88rem;
+}
+
+.pl-zone-btn .n {
+  margin-left: auto;
+  color: var(--soft);
+}
+
+.pl-empty {
+  color: var(--soft);
+}
+
+.pl-keys {
+  margin-top: 1rem;
+  font-size: 0.78rem !important;
+  color: var(--soft);
+}
+
+kbd {
+  font: 600 0.72rem/1 Consolas, monospace;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  padding: 2px 5px;
+  color: var(--text);
+}
+
+/* Tooltip */
+.pl-tip {
+  position: absolute;
+  z-index: 3;
+  pointer-events: none;
+  padding: 0.6rem 0.8rem;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-strong);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  font-size: 0.82rem;
+  line-height: 1.45;
+  white-space: nowrap;
+  transform: translate(-50%, calc(-100% - 12px));
+  opacity: 0;
+}
+
+.pl-tip.below {
+  transform: translate(-50%, 12px);
+}
+
+.pl-tip.show {
+  opacity: 1;
+}
+
+.pl-tip strong {
+  display: block;
+  font-size: 0.9rem;
+}
+
+.pl-tip .t-near {
+  display: block;
+  color: var(--amber);
+}
+
+.pl-tip .t-open {
+  display: block;
+  color: var(--blue);
+}
+
+/* SVG parts. Nothing here animates: the data points stay still. */
+.orbit {
+  fill: none;
+  stroke: rgba(190, 205, 255, 0.22);
+  stroke-width: 1.5;
+  stroke-dasharray: 3 7;
+}
+
+.planet {
+  cursor: pointer;
+  outline: none;
+}
+
+.planet .planet-sel {
+  opacity: 0;
+}
+
+.planet:hover .planet-sel,
+.planet:focus-visible .planet-sel {
+  opacity: 0.9;
+}
+
+.planet-count {
+  fill: #fff;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-weight: 800;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 4px;
+}
+
+.planet-unit {
+  fill: rgba(255, 255, 255, 0.88);
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-weight: 600;
+  text-anchor: middle;
+  paint-order: stroke;
+  stroke: rgba(0, 0, 0, 0.35);
+  stroke-width: 3px;
+}
+
+.lbl-name  { fill: var(--text);  font: 800 22px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.lbl-sub   { fill: var(--soft);  font: 500 14px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.lbl-title { fill: var(--text);  font: 800 26px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.mini-name { fill: var(--text);  font: 700 14px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.mini-sub  { fill: var(--soft);  font: 500 12px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.hint      { fill: rgba(170, 185, 230, 0.6); font: 500 13px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
+.chart-ref { fill: rgba(170, 185, 230, 0.35); font: 11px Consolas, monospace; letter-spacing: 0.12em; }
+
+.chip {
+  cursor: pointer;
+  outline: none;
+  text-decoration: none;
+}
+
+.chip-bg {
+  fill: #f4e4c4;
+  stroke: var(--zc);
+  stroke-width: 2;
+}
+
+.chip:hover .chip-bg,
+.chip:focus-visible .chip-bg,
+.chip.is-hot .chip-bg {
+  stroke: #fff;
+  stroke-width: 3.5;
+}
+
+.chip-focus {
+  fill: none;
+  stroke: var(--blue);
+  stroke-width: 3;
+  opacity: 0;
+}
+
+.chip:focus-visible .chip-focus,
+.chip.found .chip-focus {
+  opacity: 1;
+}
+
+.chip-ini {
+  fill: #141230;
+  font-family: "Segoe UI", Tahoma, sans-serif;
+  font-weight: 800;
+  text-anchor: middle;
+  pointer-events: none;
+}
+
+.halo {
+  fill: none;
+  stroke-width: 2;
+  stroke-dasharray: 3 3;
+}
+
+.more {
+  cursor: pointer;
+  outline: none;
+}
+
+.more circle {
+  fill: rgba(10, 16, 38, 0.7);
+  stroke: rgba(200, 215, 255, 0.6);
+  stroke-dasharray: 3 3;
+  stroke-width: 1.5;
+}
+
+.more text {
+  fill: var(--text);
+  font: 700 12px "Segoe UI", Tahoma, sans-serif;
+  text-anchor: middle;
+}
+
+.more:hover circle,
+.more:focus-visible circle {
+  stroke: #fff;
+  stroke-width: 2.5;
+}
+
+@media (max-width: 960px) {
+  .pl-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .pl-side-inner {
+    position: static;
+    max-height: 460px;
+  }
+}
+
+@media (max-width: 720px) {
+  .pl-tools,
+  .pl-search,
+  .pl-search input {
+    width: 100%;
+  }
+
+  .pl-zoom {
+    width: 100%;
+  }
+
+  .pl-zoom .pl-btn {
+    flex: 1;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #stage {
+    transition: none;
+  }
+}
