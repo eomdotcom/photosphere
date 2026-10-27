@@ -64,12 +64,28 @@
       </ul>
     </section>
 
-    <!-- Adviser notes -->
-    <section class="panel student-card">
+    <!-- Adviser notes (saved in Supabase, shared with every adviser; handled by notes.js) -->
+    <section class="panel student-card notes" id="notes-section" hidden>
       <h2>Adviser notes</h2>
-      <label for="notes">Record your own view</label>
-      <textarea id="notes" rows="4" placeholder="What did you notice, and what will you do next?"></textarea>
-      <button id="save-note">Save note</button>
+      <p class="notes-intro">Notes are shared with every adviser using Photosphere and can't be edited once saved.</p>
+
+      <form id="note-form">
+        <label for="note-author">Your name</label>
+        <input id="note-author" type="text" maxlength="80" autocomplete="name" placeholder="e.g. Rafael">
+
+        <label for="notes">New note for week <span id="note-week">--</span></label>
+        <textarea id="notes" rows="4" maxlength="2000"
+          placeholder="What did you notice, and what will you do next?"></textarea>
+
+        <div class="note-actions">
+          <button id="save-note" type="submit" disabled>Save note</button>
+          <span class="note-status" id="note-status" aria-live="polite"></span>
+          <span class="note-count" id="note-count">0 / 2000</span>
+        </div>
+      </form>
+
+      <h3>Previous notes</h3>
+      <ul class="note-list" id="note-list"></ul>
     </section>
   </main>
 
@@ -79,6 +95,7 @@
       parseWeek, readScore, zoneFor, zoneName,
       weekList, previousWeek, studentsForWeek, nearText, movedText,
     } from './zones.js';
+    import { initNotes, setNotesWeek } from './notes.js';
 
     // 1. Read ?id=...&week=...&from=... from the URL (set by the dashboard links)
     const params = new URLSearchParams(window.location.search);
@@ -146,10 +163,12 @@
       const current = rows.find(r => r.weekNum === wanted) || rows[rows.length - 1];
 
       render(current, rows);
+      initNotes(studentId);
     }
 
     function render(row, rows) {
       setBackLink(row.weekNum);
+      setNotesWeek(row.weekNum);
 
       // Profile
       document.title = `Photosphere - ${row.student_name ?? 'Student'}`;
