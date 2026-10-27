@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Photosphere - Planet view</title>
+  <title>Photosphere - Dashboard (planets)</title>
   <link rel="stylesheet" href="styles.css">
   <link rel="stylesheet" href="planets.css">
 </head>
@@ -13,13 +13,17 @@
   <nav class="navbar">
     <span class="brand">Photosphere</span>
     <a href="index.html">Upload data</a>
-    <a href="dashboard.html">Dashboard</a>
-    <a href="planets.html" aria-current="page">Planet view</a>
+    <a href="dashboard.html" aria-current="page">Dashboard</a>
   </nav>
 
-  <main class="planets-main">
-    <h1>Planet view</h1>
+  <main class="dashboard-main">
+    <h1>Dashboard</h1>
     <p>A zone is a prompt to look closer, not a decision about a student.</p>
+
+    <nav class="view-switch" aria-label="Dashboard view">
+      <a href="dashboard.html">List</a>
+      <a href="planets.html" aria-current="page">Planets</a>
+    </nav>
 
     <div class="pl-toolbar">
       <!-- Week buttons are built by planets.js from the week column (same as the dashboard) -->

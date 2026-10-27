@@ -10,15 +10,6 @@
   white-space: nowrap;
 }
 
-.planets-main {
-  max-width: 1280px;
-}
-
-.navbar a[aria-current="page"] {
-  color: var(--text);
-  border-color: rgba(122, 215, 255, 0.35);
-}
-
 /* Toolbar: weeks on the left, search + zoom on the right */
 .pl-toolbar {
   display: flex;
