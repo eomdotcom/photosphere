@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Photosphere - Dashboard (planets)</title>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="planets.css">
+</head>
+<body>
+
+  <!-- Navbar -->
+  <nav class="navbar">
+    <span class="brand">Photosphere</span>
+    <a href="index.html">Upload data</a>
+    <a href="dashboard.html" aria-current="page">Dashboard</a>
+  </nav>
+
+  <main class="dashboard-main">
+    <h1>Dashboard</h1>
+    <p>A zone is a prompt to look closer, not a decision about a student.</p>
+
+    <nav class="view-switch" aria-label="Dashboard view">
+      <a href="dashboard.html">List</a>
+      <a href="planets.html" aria-current="page">Planets</a>
+    </nav>
+
+    <div class="pl-toolbar">
+      <!-- Week buttons are built by planets.js from the week column (same as the dashboard) -->
+      <div class="weeks" id="week-buttons"></div>
+
+      <div class="pl-tools">
+        <label class="pl-search">
+          <span class="sr-only">Find a student</span>
+          <input id="find" type="search" list="student-names" placeholder="Find a student" autocomplete="off">
+          <datalist id="student-names"></datalist>
+        </label>
+        <div class="pl-zoom" role="group" aria-label="Zoom">
+          <button class="pl-btn" id="zoom-in" title="Zoom in to a planet (+)" aria-pressed="false">Everyone</button>
+          <button class="pl-btn" id="zoom-out" title="Zoom out (-)" aria-pressed="true">Near a zone line</button>
+        </div>
+      </div>
+    </div>
+
+    <p id="planet-status" aria-live="polite">Loading students...</p>
+
+    <div class="pl-layout">
+      <!-- The planets (drawn by planets.js) -->
+      <div class="pl-stage" id="stage-wrap">
+        <svg id="stage" viewBox="0 0 1200 640" role="group"
+             aria-label="Zones shown as planets. Each student chip is a link to their details."></svg>
+        <div class="pl-tip" id="tip" role="presentation"></div>
+      </div>
+
+      <!-- Students in view, as a list (filled by planets.js) -->
+      <aside class="pl-side" aria-label="Students in view">
+        <div class="pl-side-inner" id="side"></div>
+      </aside>
+    </div>
+
+    <!-- How to read this view (filled by planets.js so the numbers match zones.js) -->
+    <details class="pl-help" open>
+      <summary>How to read this</summary>
+      <div class="pl-help-grid" id="help"></div>
+    </details>
+  </main>
+
+  <script type="module" src="planets.js"></script>
+</body>
+</html>

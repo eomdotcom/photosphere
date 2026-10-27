@@ -438,3 +438,45 @@ main a:hover {
     margin-right: 0;
   }
 }
+
+/* Both dashboard views (list and planets) share one width */
+.dashboard-main {
+  max-width: 1280px;
+}
+
+/* Current page in the navbar */
+.navbar a[aria-current="page"] {
+  color: var(--text);
+  border-color: rgba(122, 215, 255, 0.35);
+  background: rgba(122, 215, 255, 0.08);
+}
+
+/* List | Planets switch on the dashboard */
+.view-switch {
+  display: inline-flex;
+  gap: 0.25rem;
+  padding: 0.25rem;
+  margin-top: 0.4rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: rgba(15, 24, 42, 0.7);
+}
+
+.view-switch a {
+  padding: 0.45rem 1.1rem;
+  border-radius: 999px;
+  color: var(--muted);
+  font-weight: 700;
+  font-size: 0.92rem;
+  text-decoration: none;
+}
+
+.view-switch a:hover {
+  color: var(--text);
+  text-decoration: none;
+}
+
+.view-switch a[aria-current="page"] {
+  background: linear-gradient(135deg, var(--purple), var(--blue));
+  color: #061621;
+}
