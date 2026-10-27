@@ -762,6 +762,165 @@ button.danger:hover:not(:disabled) {
   font-weight: 700;
 }
 
+/* ---------- Case status ---------- */
+
+/* Stage badge (dashboard rows, side panel) */
+.case-pill {
+  flex: none;
+  display: inline-block;
+  padding: 0.05rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid currentColor;
+  font-size: 0.7rem;
+  font-weight: 700;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+
+.case-pill.stage-new       { color: var(--amber);  background: rgba(255, 191, 122, 0.1); }
+.case-pill.stage-contacted { color: var(--blue);   background: rgba(122, 215, 255, 0.1); }
+.case-pill.stage-meeting   { color: #c4bbff;       background: rgba(155, 141, 255, 0.14); }
+.case-pill.stage-support   { color: var(--teal);   background: rgba(126, 240, 211, 0.1); }
+
+/* Name with a badge beside it */
+.name-line {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+}
+
+.name-line > :first-child {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Student page: the path strip */
+.case-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.3rem 1rem;
+}
+
+.case-head h2 {
+  margin-bottom: 0.2rem;
+}
+
+.case-meta {
+  font-size: 0.85rem;
+  color: var(--soft);
+}
+
+.case-path {
+  display: flex;
+  gap: 4px;
+  margin: 0.8rem 0 0;
+  padding: 0 0 0.2rem;
+  list-style: none;
+  overflow-x: auto;
+}
+
+.case-path li {
+  flex: 1;
+  min-width: 7.5rem;
+  margin: 0;
+}
+
+.case-step {
+  width: 100%;
+  margin: 0;
+  padding: 0.8rem 1rem 0.8rem 1.6rem;
+  border-radius: 0;
+  border: 0;
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--muted);
+  box-shadow: none;
+  font-size: 0.92rem;
+  font-weight: 700;
+  white-space: nowrap;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%, 14px 50%);
+}
+
+.case-path li:first-child .case-step {
+  padding-left: 1.1rem;
+  border-radius: 999px 0 0 999px;
+  clip-path: polygon(0 0, calc(100% - 14px) 0, 100% 50%, calc(100% - 14px) 100%, 0 100%);
+}
+
+.case-path li:last-child .case-step {
+  border-radius: 0 999px 999px 0;
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 14px 50%);
+}
+
+.case-step.done {
+  background: rgba(126, 240, 211, 0.16);
+  color: var(--teal);
+}
+
+.case-step.done::before {
+  content: "\2713  ";
+}
+
+.case-step.current {
+  background: linear-gradient(135deg, var(--amber), #ffd7a8);
+  color: #2a1606;
+}
+
+.case-step.current.done {
+  background: linear-gradient(135deg, var(--teal), #c7f8ea);
+  color: #05261f;
+}
+
+.case-step:hover:not(:disabled),
+.case-step:focus-visible:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+  filter: brightness(1.15);
+}
+
+.case-step:disabled {
+  opacity: 1;
+  cursor: default;
+}
+
+.case-step:focus-visible {
+  outline: 3px solid var(--blue);
+  outline-offset: -3px;
+}
+
+.case-note {
+  margin: 0.8rem 0 0;
+  font-size: 0.92rem;
+}
+
+.case-note .case-new {
+  margin: 0.4rem 0 0;
+  padding: 0.5rem 0.9rem;
+  font-size: 0.88rem;
+}
+
+.case-status {
+  margin: 0.4rem 0 0;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.case-status:empty {
+  display: none;
+}
+
+.case-status.ok {
+  color: var(--teal);
+}
+
+.case-status.error {
+  color: var(--rose);
+}
+
 /* Adviser notes */
 .notes-intro {
   margin-bottom: 1rem;

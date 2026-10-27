@@ -658,3 +658,8 @@ kbd {
   font-size: 0.55rem !important;
   letter-spacing: -0.02em;
 }
+
+.pl-tip .t-case {
+  display: block;
+  color: var(--amber);
+}

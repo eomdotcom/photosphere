@@ -41,6 +41,11 @@ export function setNotesWeek(week) {
   weekEl.textContent = currentWeek ?? '--';
 }
 
+// Reload the list (e.g. after a case stage change adds a note)
+export function reloadNotes() {
+  if (studentId) loadNotes();
+}
+
 async function loadNotes() {
   showListMessage('Loading notes...');
 

@@ -3,11 +3,13 @@ import {
   ZONES, parseWeek, weekList, previousWeek, studentsForWeek,
   nearText, movedTag, movedText, uniqueInitials, updateViewSwitch, renderSummary,
 } from './zones.js';
+import { loadCases, caseFor, casePill } from './cases.js';
 
 let allRows = [];        // every row from Supabase, fetched once
 let weeks = [];          // every week in the data, e.g. [1, 3, 5]
 let currentWeek = null;
 let labels = new Map();  // student id -> unique initials for this week
+let cases = new Map();   // student id -> latest case (Solar Flare case status)
 let filter = 'all';      // 'all', 'near' (near a zone line) or 'moved' (changed zone since last week)
 
 const statusEl = document.getElementById('dashboard-status');
@@ -27,6 +29,9 @@ const counts = {
 };
 
 async function loadStudents() {
+  // Case status badges (if the table isn't set up yet, the list still works without them)
+  ({ cases } = await loadCases());
+
   const { data, error } = await supabase
     .from('students')
     .select('student_id, student_name, concern_score, week')
@@ -99,7 +104,16 @@ function makeRow(s) {
   const name = document.createElement('span');
   name.className = 'name';
   name.textContent = s.name;
-  who.appendChild(name);
+  const caseInfo = caseFor(s, cases);
+  if (caseInfo) {
+    // Name with its case stage badge beside it
+    const line = document.createElement('span');
+    line.className = 'name-line';
+    line.append(name, casePill(caseInfo));
+    who.appendChild(line);
+  } else {
+    who.appendChild(name);
+  }
   if (s.moved && filter === 'moved') {
     const moved = document.createElement('span');
     moved.className = 'moved ' + s.moved;
