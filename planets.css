@@ -652,3 +652,9 @@ kbd {
     transition: none;
   }
 }
+
+/* Three-letter initials (e.g. JuH / JaH when two students share initials) */
+.ini-3 {
+  font-size: 0.55rem !important;
+  letter-spacing: -0.02em;
+}

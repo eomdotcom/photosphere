@@ -2,7 +2,7 @@ import { supabase } from './supabase.js';
 import {
   CALM_MAX, STEADY_MAX, MARGIN, ZONES as BASE_ZONES,
   parseWeek, weekList, previousWeek, studentsForWeek,
-  nearText, movedTag, movedText, initials, updateViewSwitch, renderSummary,
+  nearText, movedTag, movedText, uniqueInitials, updateViewSwitch, renderSummary,
 } from './zones.js';
 
 /* ================= SETTINGS =================
@@ -31,6 +31,7 @@ const state = {
   weeks: [],         // every week in the data, e.g. [1, 3, 5]
   week: null,
   prevWeek: null,    // the week before, to compare zones with
+  labels: new Map(), // student id -> unique initials for this week
   students: [],      // this week's students: { id, name, score, zone, near }
   mode: 'overview',  // 'overview' (zoomed out) or 'zoom' (zoomed in)
   focus: null,       // which zone is zoomed in
@@ -90,6 +91,7 @@ function showWeek(week) {
   state.students = students;
 
   byId = new Map(state.students.map(s => [s.id, s]));
+  state.labels = uniqueInitials(state.students);
   $('student-names').innerHTML = state.students
     .map(s => `<option value="${esc(s.name)}">`).join('');
 
@@ -200,10 +202,11 @@ function planet(z, x, y, r, { count = 0, mini = false, label }) {
   </g>`;
 }
 
-// One student as a score chip (zoomed in). It's a real link to their details page.
-// The chip shows the rounded score; the name is in the tooltip and the side panel.
+// One student as an initials chip (zoomed in). It's a real link to their details page.
+// Same initials as the side panel and list; the score is in the tooltip and side panel.
 function chip(s, x, y, r) {
   const z = Z[s.zone];
+  const ini = state.labels.get(s.id);
   const n = s.near;
   const nz = n ? Z[n.toward] : null;
   const label = `${s.name}, score ${s.score.toFixed(2)}, ${z.name}${n ? `, ${nearText(n)}` : ''}. Open student details.`;
@@ -216,7 +219,7 @@ function chip(s, x, y, r) {
     ${n ? `<circle class="halo" r="${r + 5}" style="stroke:${nz.color}"/>` : ''}
     <circle class="chip-focus" r="${r + 8}"/>
     <circle class="chip-bg" r="${r}"/>
-    <text class="chip-ini" dy=".35em" font-size="${Math.round(r * 0.82)}">${Math.round(s.score)}</text>
+    <text class="chip-ini" dy=".35em" font-size="${Math.round(r * (ini.length > 2 ? 0.62 : 0.78))}">${esc(ini)}</text>
     ${n ? `<g transform="translate(${(r * 0.8).toFixed(1)} ${(-r * 0.8).toFixed(1)})">
       <circle r="${br}" fill="${nz.color}" stroke="#0a1230" stroke-width="1.5"/>
       <path d="${arrow}" fill="#0a1230" transform="scale(${(br / 6.5).toFixed(2)})"/>
@@ -389,7 +392,7 @@ function row(s) {
   const z = Z[s.zone];
   const n = s.near;
   return `<li><a href="${esc(studentUrl(s))}" data-id="${esc(s.id)}" style="--c:${z.color}">
-    <span class="pl-ini" aria-hidden="true">${esc(initials(s.name))}</span>
+    <span class="pl-ini${state.labels.get(s.id).length > 2 ? ' ini-3' : ''}" aria-hidden="true">${esc(state.labels.get(s.id))}</span>
     <span class="pl-who"><span class="pl-name">${esc(s.name)}</span>${s.moved ? `<span class="moved ${s.moved}" title="${esc(movedText(s))}">${esc(movedTag(s))}</span>` : ''}</span>
     <span class="pl-score">${s.score.toFixed(2)}</span>
     <span class="pl-arrow" style="--c:${n ? Z[n.toward].color : 'transparent'}" ${n ? `title="${esc(nearText(n))}"` : ''}>${n ? (n.dir === 'up' ? '&#9650;' : '&#9660;') : ''}<span class="sr-only">${n ? ', ' + esc(nearText(n)) : ''}</span></span>
@@ -678,7 +681,7 @@ function drawHelp() {
     </div>
     <div class="pl-help-item">
       <h3>Explore</h3>
-      <p>Select a planet or <strong>Everyone</strong> to see every student in a zone, shown by score.
+      <p>Select a planet or <strong>Everyone</strong> to see every student in a zone, highest score first.
         Hover a name for details, select it to open their page.</p>
       <p class="pl-help-soft"><kbd>+</kbd> <kbd>&minus;</kbd> zoom &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> next planet &middot; <kbd>Esc</kbd> back</p>
     </div>`;

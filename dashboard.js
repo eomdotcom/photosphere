@@ -1,12 +1,13 @@
 import { supabase } from './supabase.js';
 import {
   ZONES, parseWeek, weekList, previousWeek, studentsForWeek,
-  nearText, movedTag, movedText, initials, updateViewSwitch, renderSummary,
+  nearText, movedTag, movedText, uniqueInitials, updateViewSwitch, renderSummary,
 } from './zones.js';
 
 let allRows = [];        // every row from Supabase, fetched once
 let weeks = [];          // every week in the data, e.g. [1, 3, 5]
 let currentWeek = null;
+let labels = new Map();  // student id -> unique initials for this week
 let filter = 'all';      // 'all', 'near' (near a zone line) or 'moved' (changed zone since last week)
 
 const statusEl = document.getElementById('dashboard-status');
@@ -88,7 +89,8 @@ function makeRow(s) {
   const ini = document.createElement('span');
   ini.className = 'ini';
   ini.setAttribute('aria-hidden', 'true');
-  ini.textContent = initials(s.name);
+  ini.textContent = labels.get(s.id);
+  if (ini.textContent.length > 2) ini.classList.add('ini-3');
 
   // Name, plus a "was Calm Orbit" line underneath, but only in the "Changed zone" filter
   // (kept out of the normal list so it stays simple)
@@ -135,6 +137,7 @@ function emptyRow(text) {
 function render() {
   const prevWeek = previousWeek(weeks, currentWeek);
   const { students, skipped } = studentsForWeek(allRows, currentWeek, prevWeek);
+  labels = uniqueInitials(students);
   const query = findInput.value.trim().toLowerCase();
   let shownTotal = 0;
 

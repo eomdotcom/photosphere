@@ -65,6 +65,47 @@ export function initials(name) {
   return ((parts[0]?.[0] || '') + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
 }
 
+// Initials that are unique within one week, so two students never share a label.
+// One rule for every duplicate: add a small middle letter that tells them apart.
+//   Julian Harris -> JuH, James Harris -> JaH
+//   Nora Martin -> NrM, Noah Martinez -> NaM, Nova Morris -> NvM  (2nd letters all "o", so use the 3rd)
+//   Jack Hill -> JiH, Jack Hall -> JaH                             (same first name, so use the surname)
+// Returns a Map of student id -> label.
+export function uniqueInitials(students) {
+  const groups = new Map();
+  students.forEach(s => {
+    const key = initials(s.name);
+    groups.set(key, [...(groups.get(key) || []), s]);
+  });
+
+  const labels = new Map();
+  groups.forEach((group, key) => {
+    if (group.length === 1) {
+      labels.set(group[0].id, key);
+      return;
+    }
+
+    const parts = s => String(s.name).trim().toLowerCase().split(/\s+/);
+    const firstNames = group.map(s => parts(s)[0] || '');
+    const surnames = group.map(s => { const p = parts(s); return p.length > 1 ? p[p.length - 1] : ''; });
+
+    // The first letter position (after the initial) where every name in the group differs
+    const pick = words => {
+      const longest = Math.max(...words.map(w => w.length));
+      for (let i = 1; i < longest; i++) {
+        const letters = words.map(w => w[i] || '');
+        if (letters.every(l => l) && new Set(letters).size === words.length) return letters;
+      }
+      return null;
+    };
+    const middle = pick(firstNames) || pick(surnames) ||
+      firstNames.map(w => w[1] || ''); // identical names: best effort
+
+    group.forEach((s, i) => labels.set(s.id, key[0] + middle[i] + key.slice(1)));
+  });
+  return labels;
+}
+
 export const zoneIndex = key => ZONES.findIndex(z => z.key === key);
 
 // Every week in the data, in order: [1, 3, 5]
