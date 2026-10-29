@@ -34,6 +34,32 @@ const THIS_PAGE = {
     <p class="pl-help-soft">Adviser notes are shared with every adviser and can't be edited once saved.</p>`,
 };
 
+// "Zone lines" column: worded for the view you're on
+function linesHelp(page) {
+  const intro = `<p>The <strong>${CALM_MAX}</strong> and <strong>${STEADY_MAX}</strong> scores where one zone ends
+    and the next begins. A student within <strong>${MARGIN} points</strong> of a line could change zone with a small change.</p>`;
+  if (page === 'list') return `<h3>Zone lines &#9650; &#9660;</h3>${intro}
+    <p class="pl-help-soft">&#9650; next to a score: just under a line, could move up a zone.<br>
+      &#9660; next to a score: just over a line, could move down a zone.</p>`;
+  if (page === 'planets') return `<h3>Zone lines</h3>${intro}
+    <p class="pl-help-soft">The dashed lines between planets. Names next to a line are the students
+      close to it. Zoomed in, a small &#9650; or &#9660; on a student's initials means the same.</p>`;
+  return `<h3>Zone lines</h3>${intro}`;
+}
+
+// "Changed zone" column: worded for the view you're on
+function movedHelp(page) {
+  const intro = `<p>A student who is in a different zone from the week before.
+    Not available for the first week, as there is nothing to compare with.</p>`;
+  if (page === 'list') return `<h3>Changed zone</h3>${intro}
+    <p class="pl-help-soft">Click <strong>Changed zone</strong> to see them. Under each name it says where they were,
+      in <span class="moved up">amber</span> if they moved up a zone or <span class="moved down">teal</span> if they moved down.</p>`;
+  if (page === 'planets') return `<h3>Changed zone</h3>${intro}
+    <p class="pl-help-soft">Click <strong>Changed zone</strong> to see their names next to the line they crossed.
+      <span class="moved up">Amber</span> outline: moved up a zone. <span class="moved down">Teal</span> outline: moved down.</p>`;
+  return `<h3>Changed zone</h3>${intro}`;
+}
+
 export function renderHelp(el, page) {
   // Always starts closed on every page, to keep pages uncluttered. Click to open.
   el.innerHTML = `
@@ -49,19 +75,8 @@ export function renderHelp(el, page) {
             <li>${dot('--amber')}<strong>Solar Flare Zone</strong> over ${STEADY_MAX}</li>
           </ul>
         </div>
-        <div class="pl-help-item">
-          <h3>Zone lines &#9650; &#9660;</h3>
-          <p>The <strong>${CALM_MAX}</strong> and <strong>${STEADY_MAX}</strong> cut-offs between zones.
-            Students within <strong>${MARGIN} points</strong> of one could cross it with a small change.</p>
-          <p class="pl-help-soft">&#9650; just under a line, could move up a zone &middot;
-            &#9660; just over a line, could move down. In Planets, their names sit beside the dashed line.</p>
-        </div>
-        <div class="pl-help-item">
-          <h3>Changed zone</h3>
-          <p>In a different zone from the week before. Not available for the first week.</p>
-          <p class="pl-help-soft">List: "was Calm Orbit" under the name &middot; Planets:
-            <span class="moved up">amber</span> moved up a zone, <span class="moved down">teal</span> moved down.</p>
-        </div>
+        <div class="pl-help-item">${linesHelp(page)}</div>
+        <div class="pl-help-item">${movedHelp(page)}</div>
         <div class="pl-help-item">${THIS_PAGE[page] || ''}</div>
       </div>
     </details>`;
