@@ -15,7 +15,8 @@
     <a href="dashboard.html">Dashboard</a>
   </nav>
 
-  <main class="upload-main">
+  <!-- Same width as the dashboard, so the title doesn't jump when switching pages -->
+  <main class="dashboard-main upload-page">
     <h1>Upload student data</h1>
 
     <!-- How it works -->
@@ -25,39 +26,40 @@
       <li><strong>Open the dashboard</strong>Pick a week and switch between List and Planets view.</li>
     </ol>
 
-    <!-- File upload -->
-    <section class="upload-box">
-      <label for="file">Choose a CSV file</label>
-      <input type="file" id="file" accept=".csv">
+    <div class="upload-grid">
+      <!-- Left: upload a file -->
+      <section class="upload-box" aria-labelledby="upload-title">
+        <h2 id="upload-title">Add data</h2>
+        <label for="file">Choose a CSV file</label>
+        <input type="file" id="file" accept=".csv">
 
-      <p class="hint">The concern score is calculated by the database, so the file doesn't need one.</p>
+        <p class="hint">The concern score is calculated by the database, so the file doesn't need one.</p>
 
-      <details class="col-help">
-        <summary>Which columns does the file need?</summary>
-        <span class="cols">
-          <code>student_id</code><code>student_name</code><code>week</code>
-          <code>quiz_attempts</code><code>distinct_logins_per_week</code><code>avg_days_late</code>
-          <code>days_since_last_check_in</code><code>current_grade</code><code>prior_gpa</code>
-        </span>
-      </details>
-    </section>
+        <details class="col-help">
+          <summary>Which columns does the file need?</summary>
+          <span class="cols">
+            <code>student_id</code><code>student_name</code><code>week</code>
+            <code>quiz_attempts</code><code>distinct_logins_per_week</code><code>avg_days_late</code>
+            <code>days_since_last_check_in</code><code>current_grade</code><code>prior_gpa</code>
+          </span>
+        </details>
 
-    <!-- What's in the database right now (filled by upload.js) -->
-    <section class="loaded" aria-labelledby="loaded-title">
-      <h2 id="loaded-title">Currently loaded</h2>
-      <ul class="loaded-weeks" id="loaded-weeks"></ul>
-    </section>
+        <!-- Shows messages such as "Saved 60 rows for week 3" or an error -->
+        <p id="status" aria-live="polite">Checking saved data...</p>
 
-    <!-- Shows messages such as "Saved 60 rows for week 3" or an error -->
-    <p id="status" aria-live="polite">Checking saved data...</p>
+        <button id="open-dashboard" disabled>Open the dashboard &rarr;</button>
+      </section>
 
-    <!-- Buttons -->
-    <div class="upload-actions">
-      <button id="open-dashboard" disabled>Open the dashboard &rarr;</button>
-      <div class="delete-wrap">
-        <button id="delete-data" class="danger">Delete all student data</button>
-        <p class="hint-soft">Adviser notes and cases are kept.</p>
-      </div>
+      <!-- Right: what's in the database right now (filled by upload.js) -->
+      <section class="loaded" aria-labelledby="loaded-title">
+        <h2 id="loaded-title">Currently loaded</h2>
+        <ul class="loaded-weeks" id="loaded-weeks"></ul>
+
+        <div class="delete-wrap">
+          <button id="delete-data" class="danger">Delete all student data</button>
+          <p class="hint-soft">Adviser notes and cases are kept.</p>
+        </div>
+      </section>
     </div>
   </main>
 
