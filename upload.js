@@ -46,19 +46,102 @@ async function clearAll() {
   if (error) throw error;
 }
 
-// Shows how many rows are saved and enables the dashboard button
+// Which file each week came from, remembered in this browser
+// (Supabase doesn't keep file names). e.g. { "5": { name: "week5.csv", at: "..." } }
+const FILES_KEY = 'photosphere-week-files';
+
+function weekFiles() {
+  try {
+    return JSON.parse(localStorage.getItem(FILES_KEY) || '{}');
+  } catch {
+    return {};
+  }
+}
+
+function rememberFile(name, weeks) {
+  const files = weekFiles();
+  const at = new Date().toISOString();
+  weeks.forEach(w => { files[weekNumber(w)] = { name, at }; });
+  try {
+    localStorage.setItem(FILES_KEY, JSON.stringify(files));
+  } catch { /* storage blocked: fine */ }
+}
+
+const weekNumber = w => {
+  const m = String(w ?? '').match(/\d+/);
+  return m ? Number(m[0]) : null;
+};
+
+// "Currently loaded": one line per week with the file it came from
+function showLoaded(rows) {
+  const list = document.getElementById('loaded-weeks');
+  list.innerHTML = '';
+
+  const counts = new Map();
+  rows.forEach(r => {
+    const w = weekNumber(r.week);
+    if (w !== null) counts.set(w, (counts.get(w) || 0) + 1);
+  });
+  const weeks = [...counts.keys()].sort((a, b) => a - b);
+  const files = weekFiles();
+
+  if (!weeks.length) {
+    const li = document.createElement('li');
+    li.className = 'loaded-empty';
+    li.textContent = 'Nothing loaded yet. Choose a CSV file to get started.';
+    list.appendChild(li);
+    return;
+  }
+
+  weeks.forEach(w => {
+    const li = document.createElement('li');
+
+    const week = document.createElement('span');
+    week.className = 'loaded-week';
+    week.textContent = `Week ${w}`;
+
+    const file = document.createElement('span');
+    file.className = 'loaded-name';
+    const info = files[w];
+    if (info) {
+      file.textContent = info.name;
+      file.title = info.name;
+    } else {
+      file.textContent = 'Uploaded from another computer';
+      file.classList.add('unknown');
+    }
+
+    const meta = document.createElement('span');
+    meta.className = 'loaded-meta';
+    const when = info
+      ? ' \u00B7 ' + new Date(info.at).toLocaleString('en-NZ', {
+          day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
+        })
+      : '';
+    meta.textContent = `${counts.get(w)} students${when}`;
+
+    li.append(week, file, meta);
+    list.appendChild(li);
+  });
+}
+
+// Shows what's saved and enables the dashboard button
 async function refreshStatus() {
-  const { count, error } = await supabase
+  const { data, error } = await supabase
     .from('students')
-    .select('*', { count: 'exact', head: true });
+    .select('week')
+    .range(0, 9999);
 
   if (error) {
     status.textContent = 'Could not check saved data: ' + error.message;
     return;
   }
 
-  if (count > 0) {
-    status.textContent = `${count} rows saved in total.`;
+  showLoaded(data);
+  const weeks = new Set(data.map(r => weekNumber(r.week)).filter(w => w !== null));
+
+  if (data.length > 0) {
+    status.textContent = `${data.length} rows saved across ${weeks.size} week${weeks.size === 1 ? '' : 's'}.`;
     openBtn.disabled = false;
   } else {
     status.textContent = 'No dataset loaded yet.';
@@ -129,6 +212,7 @@ fileInput.addEventListener('change', async () => {
     const { error } = await supabase.from('students').insert(records);
     if (error) throw error;
 
+    rememberFile(file.name, weeksInFile);
     await refreshStatus();
     status.textContent =
       `Saved ${records.length} rows for week ${weeksInFile.join(', ')}, and the database calculated their concern scores. ` +
@@ -149,6 +233,7 @@ deleteBtn.addEventListener('click', async () => {
 
   try {
     await clearAll();
+    try { localStorage.removeItem(FILES_KEY); } catch { /* fine */ }
     await refreshStatus();
   } catch (error) {
     console.error(error);

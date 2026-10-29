@@ -725,6 +725,79 @@ button.danger:hover:not(:disabled) {
   margin: 0;
 }
 
+/* "Currently loaded" on the upload page */
+.loaded {
+  margin-top: 1.4rem;
+  padding: 1.2rem 1.4rem;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--bg-panel);
+}
+
+.loaded h2 {
+  margin: 0 0 0.3rem;
+  font-size: 1.05rem;
+}
+
+.loaded-weeks {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loaded-weeks li {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 0.8rem;
+  margin: 0;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid rgba(149, 181, 255, 0.12);
+}
+
+.loaded-weeks li:last-child {
+  border-bottom: 0;
+}
+
+.loaded-week {
+  font-weight: 700;
+}
+
+.loaded-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--blue);
+}
+
+.loaded-name.unknown {
+  color: var(--soft);
+  font-style: italic;
+}
+
+.loaded-meta {
+  font-size: 0.85rem;
+  color: var(--soft);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.loaded-weeks li.loaded-empty {
+  display: block;
+  color: var(--soft);
+  font-size: 0.92rem;
+}
+
+@media (max-width: 560px) {
+  .loaded-weeks li {
+    grid-template-columns: 4.5rem minmax(0, 1fr);
+  }
+
+  .loaded-meta {
+    grid-column: 2;
+  }
+}
+
 /* ---------- Student page ---------- */
 .student-flags {
   display: flex;

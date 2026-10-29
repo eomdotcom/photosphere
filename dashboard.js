@@ -176,8 +176,8 @@ function render() {
       lists[z.key].appendChild(emptyRow('No one near a zone line'));
     }
 
-    // "50", or "7 of 50" when a filter or search is on
-    counts[z.key].textContent = shown.length === inZone.length
+        // "56" normally; "4 of 4" or "1 of 56" whenever a filter or search is on
+    counts[z.key].textContent = filter === 'all' && !query
       ? inZone.length
       : `${shown.length} of ${inZone.length}`;
   });
