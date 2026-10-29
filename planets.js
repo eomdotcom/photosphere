@@ -139,7 +139,6 @@ const countNear = list => list.filter(s => s.near).length;
 /* ================= DRAWING ================= */
 function draw() {
   hideTip();
-  wrap.classList.toggle('zoomed', state.mode === 'zoom');
   if (state.mode === 'zoom') drawZoom(state.focus);
   else drawOverview();
   drawSide();
@@ -483,7 +482,6 @@ function drawSide() {
   } else {
     const z = Z[state.focus];
     const list = lists[state.focus];
-    h += `<button class="pl-btn pl-back" data-action="out">&larr; All planets</button>`;
     h += `<h2>${z.name}</h2><p>${z.blurb}. ${list.length} student${list.length === 1 ? '' : 's'}, highest score first.</p>`;
     h += list.length
       ? `<ul class="pl-rows">${list.map(row).join('')}</ul>`
@@ -665,7 +663,6 @@ stage.addEventListener('wheel', e => {
 side.addEventListener('click', e => {
   const zb = e.target.closest('.pl-zone-btn');
   if (zb) zoomTo(zb.dataset.zone);
-  if (e.target.closest('[data-action="out"]')) zoomOut();
 });
 side.addEventListener('pointerover', e => highlight(e.target.closest('a[data-id]')?.dataset.id));
 side.addEventListener('pointerleave', () => highlight(null));

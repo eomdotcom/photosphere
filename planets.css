@@ -313,12 +313,6 @@
   color: var(--c);
 }
 
-.pl-back {
-  margin-bottom: 0.9rem;
-  padding: 0.55rem 0.8rem;
-  font-size: 0.85rem;
-}
-
 .pl-zone-btns {
   display: grid;
   gap: 0.5rem;
@@ -447,10 +441,10 @@ kbd {
 .mini-name { fill: var(--text);  font: 700 18px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
 .mini-sub  { fill: var(--muted); font: 500 16px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
 .hint      { fill: rgba(190, 205, 240, 0.75); font: 500 16px "Segoe UI", Tahoma, sans-serif; text-anchor: middle; }
-/* Coordinates in the top-left corner of the chart (HTML, so it stays crisp at any size) */
+/* "Team FourCast" in the bottom-left corner of every planet view */
 .chart-ref {
   position: absolute;
-  top: 0.9rem;
+  bottom: 0.9rem;
   left: 1.1rem;
   right: 1.1rem;
   display: flex;
@@ -465,8 +459,6 @@ kbd {
   letter-spacing: 0.14em;
   text-transform: uppercase;
 }
-.chart-ref-coords { color: rgba(122, 215, 255, 0.7); }
-.chart-ref-dec    { color: rgba(185, 200, 240, 0.4); letter-spacing: 0.08em; }
 /* A small crosshair, like a star chart */
 .chart-ref-mark {
   position: relative;
@@ -483,8 +475,6 @@ kbd {
 }
 .chart-ref-mark::before { left: 50%; top: -35%; bottom: -35%; width: 1px; }
 .chart-ref-mark::after  { top: 50%; left: -35%; right: -35%; height: 1px; }
-/* Zoomed in, a small planet sits in that corner, so the coordinates move to the bottom */
-.pl-stage.zoomed .chart-ref { top: auto; bottom: 0.9rem; }
 /* Too small to read on a phone, and it would cover the chart */
 @media (max-width: 720px) { .chart-ref { display: none; } }
 
