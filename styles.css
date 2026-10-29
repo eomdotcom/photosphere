@@ -668,6 +668,34 @@ button.danger:hover:not(:disabled) {
   font-size: 0.9rem;
 }
 
+.col-help {
+  margin-top: 0.6rem;
+  font-size: 0.88rem;
+  color: var(--soft);
+}
+
+.col-help summary {
+  cursor: pointer;
+  color: var(--blue);
+}
+
+.col-help .cols {
+  margin-top: 0.6rem;
+}
+
+.hint-soft {
+  font-size: 0.85rem;
+  color: var(--soft);
+}
+
+.delete-wrap {
+  text-align: right;
+}
+
+.delete-wrap .hint-soft {
+  margin: 0.35rem 0 0;
+}
+
 .cols {
   display: inline-flex;
   flex-wrap: wrap;
