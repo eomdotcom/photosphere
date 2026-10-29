@@ -287,7 +287,7 @@ function crossedTo(line, zoneKey) {
 // A name pill for someone who changed zone: arrow + name, coloured by direction
 function movedPill(s, label, lineX, y, side) {
   const z = Z[s.zone];
-  const text = `${s.moved === 'up' ? '\u25B2' : '\u25BC'} ${label}`;
+  const text = label; // direction is shown by colour (amber up, teal down), not arrows
   const w = Math.round(text.length * 8.6 + 24);
   const x = side === 'left' ? lineX - 6 - w : lineX + 6;
   const aria = `${s.name}, ${movedText(s)}, now in ${z.name}. Open student details.`;
@@ -316,7 +316,7 @@ function drawOverview() {
     svg += `<text class="lbl-name" x="${p.x}" y="452">${esc(z.name)}</text>`;
     svg += `<text class="lbl-sub" x="${p.x}" y="480">${list.length} student${list.length === 1 ? '' : 's'}</text>`;
     const movedIn = list.filter(s => s.moved).length;
-    if (state.prevWeek !== null) {
+    if (state.prevWeek !== null && state.lens === 'moved') {
       svg += `<text class="lbl-moved" x="${p.x}" y="506">${movedIn ? `${movedIn} new since week ${state.prevWeek}` : `No change since week ${state.prevWeek}`}</text>`;
     }
   });
@@ -367,9 +367,7 @@ function drawOverview() {
     });
   });
 
-  svg += moved
-    ? `<text class="hint" x="600" y="590">Names sit beside the line they crossed, on their new zone's side &#183; amber moved up, teal moved down &#183; click a name to open their details</text>`
-    : `<text class="hint" x="600" y="590">Hover a name for the score &#183; click it to open their details &#183; click a planet to see everyone &#183; help below the chart</text>`;
+  // (explanations live in the help strip under the chart)
   stage.innerHTML = svg;
 }
 
@@ -440,9 +438,9 @@ function nameWithCase(s) {
   return `<span class="name-line">${name}<span class="case-pill stage-${info.stage}" title="${esc(title)}">${esc(stageLabel(info.stage))}</span></span>`;
 }
 
-function row(s) {
+function row(s, { showNear = true } = {}) {
   const z = Z[s.zone];
-  const n = s.near;
+  const n = showNear ? s.near : null;
   return `<li><a href="${esc(studentUrl(s))}" data-id="${esc(s.id)}" style="--c:${z.color}">
     <span class="pl-ini${state.labels.get(s.id).length > 2 ? ' ini-3' : ''}" aria-hidden="true">${esc(state.labels.get(s.id))}</span>
     <span class="pl-who">${nameWithCase(s)}${s.moved ? `<span class="moved ${s.moved}" title="${esc(movedText(s))}">${esc(movedTag(s))}</span>` : ''}</span>
@@ -455,31 +453,14 @@ function drawSide() {
   const lists = zoneLists();
   let h = '';
 
-  if (state.mode === 'overview' && state.lens === 'moved') {
-    const movers = state.students.filter(s => s.moved)
-      .sort((a, b) => (a.moved === b.moved ? b.score - a.score : a.moved === 'up' ? -1 : 1));
-    h += `<h2>Changed zone</h2><p>Since week ${state.prevWeek}.</p>`;
-    const up = movers.filter(s => s.moved === 'up');
-    const down = movers.filter(s => s.moved === 'down');
-    if (up.length) h += `<h3><span class="pl-dot" style="--c:var(--amber)"></span>Moved up a zone</h3><ul class="pl-rows">${up.map(row).join('')}</ul>`;
-    if (down.length) h += `<h3><span class="pl-dot" style="--c:var(--teal)"></span>Moved down a zone</h3><ul class="pl-rows">${down.map(row).join('')}</ul>`;
-    if (!movers.length) h += `<p class="pl-empty">No one changed zone since week ${state.prevWeek}.</p>`;
-  } else if (state.mode === 'overview') {
-    h += `<h2>Near a zone line</h2>
-      <p>Within ${MARGIN} points of ${CALM_MAX} or ${STEADY_MAX}.</p>`;
-    const pairs = [['calm', 'steady'], ['steady', 'calm'], ['steady', 'flare'], ['flare', 'steady']];
-    let any = false;
-    pairs.forEach(([from, to]) => {
-      const group = lists[from]
-        .filter(s => s.near && s.near.toward === to)
-        .sort((a, b) => a.near.dist - b.near.dist);
-      if (!group.length) return;
-      any = true;
-      h += `<h3><span class="pl-dot" style="--c:${Z[from].color}"></span>${Z[from].name}
-        <span class="pl-soft">close to</span> ${Z[to].name}</h3>
-        <ul class="pl-rows">${group.map(row).join('')}</ul>`;
-    });
-    if (!any) h += `<p class="pl-empty">No one is within ${MARGIN} points of a zone line this week.</p>`;
+  if (state.mode === 'overview') {
+    // The chart already shows who's near a line / who moved; the panel shows who needs action
+    const flare = lists.flare;
+    h += `<h2>Needs action</h2>
+      <p>Students in the Solar Flare Zone this week, highest score first, with their case stage.</p>`;
+    h += flare.length
+      ? `<ul class="pl-rows">${flare.map(s => row(s, { showNear: false })).join('')}</ul>`
+      : `<p class="pl-empty">No one is in the Solar Flare Zone this week.</p>`;
   } else {
     const z = Z[state.focus];
     const list = lists[state.focus];
@@ -739,13 +720,13 @@ function drawHelp() {
       <h3>Zone lines</h3>
       <p>The dashed <strong>${CALM_MAX}</strong> and <strong>${STEADY_MAX}</strong> lines are the cut-offs between zones.
         Names beside a line are within <strong>${MARGIN} points</strong> of it, on their own zone's side.</p>
-      <p class="pl-help-soft">The closer a name sits to the line, the closer their score. A ${CALM_MAX - 1} sits right against the ${CALM_MAX} line.</p>
+      <p class="pl-help-soft">A small change in score could move them into the next zone. Hover a name for the exact score.</p>
     </div>
     <div class="pl-help-item">
       <h3>Changed zone</h3>
       <p>Compared with the week before. Press <strong>Changed zone</strong> to see who crossed each line; under each planet is how many are new to that zone.</p>
-      <p class="pl-help-soft">In the side panel, <span class="moved up">amber</span> moved up into a higher-concern zone,
-        <span class="moved down">teal</span> moved down.</p>
+      <p class="pl-help-soft">On the chart, an <span class="moved up">amber</span> outline means they moved up a zone,
+        <span class="moved down">teal</span> means they moved down. The side panel always lists who needs action.</p>
     </div>
     <div class="pl-help-item">
       <h3>Explore</h3>
