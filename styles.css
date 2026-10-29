@@ -1356,3 +1356,70 @@ button.danger:hover:not(:disabled) {
 .pl-help-item .case-pill {
   vertical-align: 0.05rem;
 }
+
+/* ---------- Dashboard header and button tooltips ---------- */
+.page-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.8rem 1.5rem;
+  margin-bottom: 1.6rem;
+}
+
+.page-head h1 {
+  margin: 0;
+}
+
+.page-head .view-switch {
+  margin: 0;
+}
+
+/* Hover (or keyboard focus) a filter button to see its count */
+[data-tip] {
+  position: relative;
+}
+
+[data-tip]:hover::after,
+[data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  z-index: 20;
+  top: calc(100% + 8px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: max-content;
+  max-width: 260px;
+  padding: 0.45rem 0.7rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg-panel-strong);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  color: var(--text);
+  font: 500 0.82rem/1.4 "Segoe UI", Tahoma, sans-serif;
+  white-space: normal;
+  text-align: center;
+  pointer-events: none;
+}
+
+.summary:empty {
+  display: none;
+}
+
+/* Keep tooltips readable on greyed-out buttons, and inside the page on the right edge */
+.pl-zoom .pl-btn:disabled,
+.list-filter .list-btn:disabled {
+  opacity: 1;
+  color: rgba(191, 208, 235, 0.45);
+}
+
+[data-tip]:last-child:hover::after,
+[data-tip]:last-child:focus-visible::after {
+  left: auto;
+  right: 0;
+  transform: none;
+}
+
+/* Space between the toolbar and the chart / zones now the count chips are gone */
+.dashboard-main .pl-layout {
+  margin-top: 1.2rem;
+}

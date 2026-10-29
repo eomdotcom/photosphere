@@ -17,13 +17,14 @@
   </nav>
 
   <main class="dashboard-main">
-    <h1>Dashboard</h1>
-    <p>A zone is a prompt to look closer, not a decision about a student.</p>
-
-    <nav class="view-switch" aria-label="Dashboard view">
-      <a href="dashboard.html">List</a>
-      <a href="planets.html" aria-current="page">Planets</a>
-    </nav>
+    <!-- Title with the List | Planets switch beside it -->
+    <div class="page-head">
+      <h1>Dashboard</h1>
+      <nav class="view-switch" aria-label="Dashboard view">
+        <a href="dashboard.html">List</a>
+        <a href="planets.html" aria-current="page">Planets</a>
+      </nav>
+    </div>
 
     <div class="pl-toolbar">
       <!-- Week buttons are built by planets.js from the week column (same as the dashboard) -->
@@ -36,14 +37,15 @@
           <datalist id="student-names"></datalist>
         </label>
         <div class="pl-zoom" role="group" aria-label="Show">
-          <button class="pl-btn" id="zoom-in" title="Zoom in to a planet (+)" aria-pressed="false">Everyone</button>
-          <button class="pl-btn" id="zoom-out" title="Zoom out (-)" aria-pressed="true">Near a zone line</button>
-          <button class="pl-btn" id="lens-moved" title="Who changed zone since the week before" aria-pressed="false">Changed zone</button>
+          <button class="pl-btn" id="zoom-in" data-count="all" aria-pressed="false">Everyone</button>
+          <button class="pl-btn" id="zoom-out" data-count="near" aria-pressed="true">Near a zone line</button>
+          <button class="pl-btn" id="lens-moved" data-count="moved" aria-pressed="false">Changed zone</button>
         </div>
       </div>
     </div>
 
-    <div class="summary" id="planet-status" aria-live="polite">Loading students...</div>
+    <!-- Only shows search results or warnings; counts are on the buttons (hover) -->
+    <div class="summary" id="planet-status" aria-live="polite"></div>
 
     <div class="pl-layout">
       <!-- The planets (drawn by planets.js) -->
