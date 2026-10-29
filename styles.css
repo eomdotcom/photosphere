@@ -1347,6 +1347,12 @@ button.danger:hover:not(:disabled) {
   color: var(--text);
 }
 
-.upload-page .pl-help {
-  margin-top: 1.2rem;
+
+/* Shared help strip spacing */
+#help-strip .pl-help {
+  margin: 1.2rem 0;
+}
+
+.pl-help-item .case-pill {
+  vertical-align: 0.05rem;
 }

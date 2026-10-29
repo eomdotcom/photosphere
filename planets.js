@@ -702,42 +702,5 @@ find.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); findStudent(); }
 });
 
-/* ================= HELP ================= */
-// A short explanation per idea. Numbers come from zones.js so they always match.
-function drawHelp() {
-  const dot = key => `<span class="pl-dot" style="--c:${Z[key].color}"></span>`;
-  $('help').innerHTML = `
-    <div class="pl-help-item">
-      <h3>Zones</h3>
-      <p>Each student's concern score places them in one zone:</p>
-      <ul>
-        <li>${dot('calm')}<strong>Calm Orbit</strong> ${CALM_MAX} or less</li>
-        <li>${dot('steady')}<strong>Steady Star</strong> above ${CALM_MAX}, up to ${STEADY_MAX}</li>
-        <li>${dot('flare')}<strong>Solar Flare Zone</strong> over ${STEADY_MAX}</li>
-      </ul>
-    </div>
-    <div class="pl-help-item">
-      <h3>Zone lines</h3>
-      <p>The dashed <strong>${CALM_MAX}</strong> and <strong>${STEADY_MAX}</strong> lines are the cut-offs between zones.
-        Names beside a line are within <strong>${MARGIN} points</strong> of it, on their own zone's side.</p>
-      <p class="pl-help-soft">A small change in score could move them into the next zone. Hover a name for the exact score.</p>
-    </div>
-    <div class="pl-help-item">
-      <h3>Changed zone</h3>
-      <p>Compared with the week before. Press <strong>Changed zone</strong> to see who crossed each line; under each planet is how many are new to that zone.</p>
-      <p class="pl-help-soft">On the chart, an <span class="moved up">amber</span> outline means they moved up a zone,
-        <span class="moved down">teal</span> means they moved down. The side panel always lists who needs action.</p>
-    </div>
-    <div class="pl-help-item">
-      <h3>Explore</h3>
-      <p>Click a planet or <strong>Everyone</strong> to see every student in a zone, highest score first.
-        Hover a name for the score, click it to open their details.</p>
-      <p class="pl-help-soft"><strong>Keyboard shortcuts</strong> (press these keys):
-        <kbd>+</kbd> zoom in &middot; <kbd>&minus;</kbd> zoom out &middot;
-        <kbd>&larr;</kbd> <kbd>&rarr;</kbd> next planet &middot; <kbd>Esc</kbd> back to all planets</p>
-    </div>`;
-}
-
-drawHelp();
 syncButtons();
 loadStudents();
