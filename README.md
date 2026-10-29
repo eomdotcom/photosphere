@@ -1,27 +1,24 @@
 # Photosphere 
 
-> **By Team FourCast:** Esuru Nanayakkara, Hani Patel, Rafael Carreon, Sophia Kwong
+**By Team FourCast:** Esuru Nanayakkara, Hani Patel, Rafael Carreon, Sophia Kwong
 
 Adviser-facing proof-of-concept for INFOMGMT 399 (Project 2: early-warning tool for student engagement).
 
-Photosphere places students in three zones (Calm Orbit, Steady Star, Solar Flare Zone) using a
-transparent, rule-based score from early-semester engagement data. Each student page explains
-in plain language which factors contributed. A light fairness check shows how demographic groups
-are spread across zones; demographic fields are never used in the score.
+## Overview
+Photosphere categorizes students into three engagement zones (Calm Orbit, Steady Star, and Solar Flare Zone) using a transparent, rule-based scoring system derived from early-semester engagement data.
 
-**All data is synthetic.** The tool does not predict dropout or make decisions. Advisers decide
-on any follow-up.
-
+* **Transparent Factors:** Individual student pages explain in plain language which factors contributed to their zone placement.
+* **Adviser-Led:** The tool does not make decisions or predict dropouts, it provides insights to help advisers decide appropriate follow-ups.
+* **Data Privacy:** All data used in this project is strictly synthetic.
+  
 ### Prerequisites
-* [VS Code](https://code.visualstudio.com/) with the **Live Server** extension installed.
+* VS Code with the **Live Server** extension installed.
   
 ### Setup & Running
 1. Clone the GitHub repository to your local machine. 
 2. Open the project directory in VS Code. 
 3. Launch the application using VS Code Live Server (e.g., click "Go Live" at the bottom right).
 (Note: Opening index.html directly in a browser won't work due to ES module imports.)
-
-
 
 ### Usage & Data Setup
 1. Upload Data: Navigate to the Upload page (index.html) and submit a CSV file.
