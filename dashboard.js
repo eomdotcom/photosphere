@@ -210,9 +210,6 @@ function syncMovedButton() {
   const btn = document.querySelector('[data-filter="moved"]');
   const prevWeek = previousWeek(weeks, currentWeek);
   btn.disabled = prevWeek === null;
-  btn.title = prevWeek === null
-    ? `Week ${currentWeek} is the first week, so there's nothing to compare with`
-    : `Students whose zone is different from week ${prevWeek}`;
   if (btn.disabled && filter === 'moved') setFilter('all');
 }
 

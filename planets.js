@@ -480,9 +480,6 @@ function syncButtons() {
   const movedBtn = $('lens-moved');
   const noEarlier = state.prevWeek === null;
   movedBtn.disabled = noEarlier;
-  movedBtn.title = noEarlier
-    ? `Week ${state.week ?? ''} is the first week, so there's nothing to compare with`
-    : `Who changed zone since week ${state.prevWeek}`;
   if (noEarlier && state.lens === 'moved') state.lens = 'near';
 
   $('zoom-in').setAttribute('aria-pressed', String(state.mode === 'zoom'));

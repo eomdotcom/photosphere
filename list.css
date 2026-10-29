@@ -126,8 +126,23 @@
 }
 
 .zones {
-  margin-top: 1rem;
-  align-items: start;
+  margin-top: 1.2rem;
+  align-items: stretch;
+}
+
+/* Each zone is the same fixed height; its list scrolls inside it */
+.zones .zone {
+  display: flex;
+  flex-direction: column;
+  height: clamp(380px, 60vh, 640px);
+}
+
+.zones .zone .list-rows {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  margin-right: -0.6rem;
+  padding-right: 0.6rem;
 }
 
 /* Count next to each zone name */
