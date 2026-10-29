@@ -27,7 +27,7 @@
       <span class="badge" id="zone">--</span>
       <h2 id="student-name">Loading student...</h2>
       <p>
-        Learner ID <span id="learner-id">--</span> &middot;
+        Student ID <span id="student-id">--</span> &middot;
         Course <span id="course">--</span> &middot;
         Week <span id="week">--</span>
       </p>
@@ -185,7 +185,7 @@
       // Profile
       document.title = `Photosphere - ${row.student_name ?? 'Student'}`;
       setText('student-name', row.student_name);
-      setText('learner-id', row.student_id);
+      setText('student-id', row.student_id);
       setText('course', row.course_code);
       setText('week', row.weekNum);
 
