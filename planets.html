@@ -21,8 +21,8 @@
     <p>A zone is a prompt to look closer, not a decision about a student.</p>
 
     <nav class="view-switch" aria-label="Dashboard view">
-      <a href="dashboard.html">List View</a>
-      <a href="planets.html" aria-current="page">Planets View</a>
+      <a href="dashboard.html">List</a>
+      <a href="planets.html" aria-current="page">Planets</a>
     </nav>
 
     <div class="pl-toolbar">
@@ -35,9 +35,10 @@
           <input id="find" type="search" list="student-names" placeholder="Find a student" autocomplete="off">
           <datalist id="student-names"></datalist>
         </label>
-        <div class="pl-zoom" role="group" aria-label="Zoom">
+        <div class="pl-zoom" role="group" aria-label="Show">
           <button class="pl-btn" id="zoom-in" title="Zoom in to a planet (+)" aria-pressed="false">Everyone</button>
           <button class="pl-btn" id="zoom-out" title="Zoom out (-)" aria-pressed="true">Near a zone line</button>
+          <button class="pl-btn" id="lens-moved" title="Who changed zone since the week before" aria-pressed="false">Changed zone</button>
         </div>
       </div>
     </div>

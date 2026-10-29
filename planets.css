@@ -96,7 +96,28 @@
 
 .pl-zoom .pl-btn:last-child {
   border-radius: 0 12px 12px 0;
+}
+
+.pl-zoom .pl-btn + .pl-btn {
   border-left: 0;
+}
+
+.pl-zoom .pl-btn:not(:first-child):not(:last-child) {
+  border-radius: 0;
+}
+
+.pl-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* Changed zone pills: amber outline = moved up, teal = moved down */
+.moved-pill.up .chip-bg {
+  stroke: var(--amber);
+}
+
+.moved-pill.down .chip-bg {
+  stroke: var(--teal);
 }
 
 .pl-btn:focus-visible,
