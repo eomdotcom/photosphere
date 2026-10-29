@@ -6,7 +6,9 @@ import { supabase } from './supabase.js';
 // Rules:
 //  - A student in the Solar Flare Zone with no case starts at "New" automatically.
 //    Nothing is saved until an adviser moves the case along.
-//  - A case stays open (even if the student leaves the zone) until an adviser closes it.
+//  - Cases are only for the Solar Flare Zone. In a week where the student is in
+//    Calm Orbit or Steady Star, no case is shown (adviser notes cover those students).
+//    If they come back into Solar Flare, their case picks up where it left off.
 //  - Closed cases are kept as history. An adviser can start a new case.
 //  - Every stage change is also written to the student's adviser notes.
 
@@ -55,10 +57,11 @@ export async function loadCases(studentId = null) {
 // What to show for a student this week: { stage, auto } or null for no badge.
 // student needs { id, zone }.
 export function caseFor(student, cases) {
+  if (student.zone !== 'flare') return null; // cases are only for the Solar Flare Zone
   const row = cases.get(String(student.id));
   if (row && row.stage !== 'closed') return { stage: row.stage, auto: false };
-  if (!row && student.zone === 'flare') return { stage: 'new', auto: true };
-  return null;
+  if (!row) return { stage: 'new', auto: true };
+  return null; // closed case: no badge
 }
 
 // A small coloured badge, e.g. "Contacted"
@@ -111,8 +114,8 @@ function renderStrip() {
   const { row, zone, zoneName, week } = ctx;
   const section = $('case-section');
 
-  // No case ever, and not in Solar Flare: nothing to show
-  if (!row && zone !== 'flare') {
+  // Cases are only for the Solar Flare Zone
+  if (zone !== 'flare') {
     section.hidden = true;
     return;
   }
@@ -160,18 +163,13 @@ function renderStrip() {
     note.textContent = `Assigned automatically: this student is in the Solar Flare Zone in week ${week}. ` +
       'Select a stage to start working on the case.';
   } else if (closed) {
-    note.textContent = 'This case is closed.';
-    if (zone === 'flare') {
-      note.append(' The student is in the Solar Flare Zone again this week. ');
-      const again = document.createElement('button');
-      again.type = 'button';
-      again.className = 'secondary case-new';
-      again.textContent = 'Start a new case';
-      again.addEventListener('click', () => moveTo('new', { fresh: true }));
-      note.appendChild(again);
-    }
-  } else if (zone !== 'flare') {
-    note.textContent = `Now in ${zoneName} this week. The case stays open until an adviser closes it.`;
+    note.textContent = 'This case is closed. The student is in the Solar Flare Zone this week. ';
+    const again = document.createElement('button');
+    again.type = 'button';
+    again.className = 'secondary case-new';
+    again.textContent = 'Start a new case';
+    again.addEventListener('click', () => moveTo('new', { fresh: true }));
+    note.appendChild(again);
   }
 }
 
