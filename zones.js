@@ -57,7 +57,7 @@ export function nearBoundary({ zone, score }) {
 
 // e.g. "2.3 pts under the 30 line, close to Steady Star"
 export const nearText = n =>
-  `${n.dist.toFixed(1)} pts away from the ${zoneName(n.toward)}`;
+  `${n.dist.toFixed(1)} pts ${n.dir === 'up' ? 'under' : 'over'} the ${n.line} line, close to ${zoneName(n.toward)}`;
 
 // "Olivia Rodriguez" -> "OR"
 export function initials(name) {
@@ -182,9 +182,22 @@ export function updateViewSwitch(week) {
   });
 }
 
-// The summary chips under the week buttons, e.g.
-// [60 students] [10 near a zone line] [5 changed zone since week 3]
+// Counts appear when hovering the filter buttons (data-count="all|near|moved"),
+// e.g. "60 students", "14 near a zone line". The summary line under the toolbar only
+// shows things that need attention: skipped rows and search results.
 export function renderSummary(el, { total, near, moved, prevWeek, skipped, note }) {
+  const tips = {
+    all: `${total} student${total === 1 ? '' : 's'} this week`,
+    near: `${near} within ${MARGIN} points of the ${CALM_MAX} or ${STEADY_MAX} line`,
+    moved: prevWeek === null
+      ? 'Not available: this is the first week, so there is nothing to compare with'
+      : `${moved} changed zone since week ${prevWeek}`,
+  };
+  document.querySelectorAll('[data-count]').forEach(btn => {
+    btn.dataset.tip = tips[btn.dataset.count];
+    btn.setAttribute('aria-description', tips[btn.dataset.count]);
+  });
+
   el.innerHTML = '';
   const add = (count, text, kind) => {
     const chip = document.createElement('span');
@@ -197,9 +210,6 @@ export function renderSummary(el, { total, near, moved, prevWeek, skipped, note 
     chip.append(text);
     el.appendChild(chip);
   };
-  add(total, total === 1 ? 'student' : 'students');
-  add(near, 'near a zone line', 'stat-near');
-  if (prevWeek !== null) add(moved, `changed zone since week ${prevWeek}`, 'stat-moved');
   if (skipped) add(skipped, 'skipped (no score)', 'stat-warn');
   if (note) add(null, note, 'stat-note');
 }

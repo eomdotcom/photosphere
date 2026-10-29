@@ -1423,3 +1423,48 @@ button.danger:hover:not(:disabled) {
 .dashboard-main .pl-layout {
   margin-top: 1.2rem;
 }
+
+/* List and Planets share one height and start at the same spot,
+   so switching between them doesn't move anything */
+:root {
+  --view-h: clamp(420px, 62vh, 640px);
+}
+
+.dashboard-main .list-toolbar,
+.dashboard-main .pl-toolbar {
+  margin-top: 0;
+  min-height: 3.2rem;
+}
+
+.dashboard-main .zones,
+.dashboard-main .pl-layout {
+  margin-top: 1.2rem;
+}
+
+.dashboard-main .zones .zone,
+.dashboard-main .pl-layout {
+  height: var(--view-h);
+}
+
+.dashboard-main .pl-stage {
+  height: 100%;
+}
+
+.dashboard-main #stage {
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 960px) {
+  .dashboard-main .pl-layout {
+    height: auto;
+  }
+
+  .dashboard-main .pl-stage {
+    height: auto;
+  }
+
+  .dashboard-main #stage {
+    height: auto;
+  }
+}
