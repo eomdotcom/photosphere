@@ -57,7 +57,7 @@ export function nearBoundary({ zone, score }) {
 
 // e.g. "2.3 pts under the 30 line, close to Steady Star"
 export const nearText = n =>
-  `${n.dist.toFixed(1)} pts ${n.dir === 'up' ? 'under' : 'over'} the ${n.line} line, close to ${zoneName(n.toward)}`;
+  `${n.dist.toFixed(1)} pts away from the ${zoneName(n.toward)}`;
 
 // "Olivia Rodriguez" -> "OR"
 export function initials(name) {
