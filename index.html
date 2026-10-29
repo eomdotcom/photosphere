@@ -43,8 +43,14 @@
       </details>
     </section>
 
+    <!-- What's in the database right now (filled by upload.js) -->
+    <section class="loaded" aria-labelledby="loaded-title">
+      <h2 id="loaded-title">Currently loaded</h2>
+      <ul class="loaded-weeks" id="loaded-weeks"></ul>
+    </section>
+
     <!-- Shows messages such as "Saved 60 rows for week 3" or an error -->
-    <p id="status" aria-live="polite">No dataset loaded yet.</p>
+    <p id="status" aria-live="polite">Checking saved data...</p>
 
     <!-- Buttons -->
     <div class="upload-actions">

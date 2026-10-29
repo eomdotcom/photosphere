@@ -331,7 +331,7 @@ function drawOverview() {
     });
   });
 
-  svg += `<text class="hint" x="600" y="590">Hover a name for the exact score &#183; select a planet to see everyone &#183; help below the chart</text>`;
+  svg += `<text class="hint" x="600" y="590">Hover a name for the score &#183; click it to open their details &#183; click a planet to see everyone &#183; help below the chart</text>`;
   stage.innerHTML = svg;
 }
 
@@ -552,7 +552,7 @@ function showTip(a) {
     (s.near ? `<span class="t-near">${esc(nearText(s.near))}</span>` : '') +
     (s.moved ? `<span class="t-moved ${s.moved}">${esc(movedText(s))}</span>` : '') +
     (caseFor(s, cases) ? `<span class="t-case">Case: ${esc(stageLabel(caseFor(s, cases).stage))}</span>` : '') +
-    `<span class="t-open">Open student details &rarr;</span>`;
+    `<span class="t-open">Click to open student details &rarr;</span>`;
   const r = a.getBoundingClientRect();
   const w = wrap.getBoundingClientRect();
   const below = r.top - w.top < 110;
@@ -696,9 +696,11 @@ function drawHelp() {
     </div>
     <div class="pl-help-item">
       <h3>Explore</h3>
-      <p>Select a planet or <strong>Everyone</strong> to see every student in a zone, highest score first.
-        Hover a name for details, select it to open their page.</p>
-      <p class="pl-help-soft"><kbd>+</kbd> <kbd>&minus;</kbd> zoom &middot; <kbd>&larr;</kbd> <kbd>&rarr;</kbd> next planet &middot; <kbd>Esc</kbd> back</p>
+      <p>Click a planet or <strong>Everyone</strong> to see every student in a zone, highest score first.
+        Hover a name for the score, click it to open their details.</p>
+      <p class="pl-help-soft"><strong>Keyboard shortcuts</strong> (press these keys):
+        <kbd>+</kbd> zoom in &middot; <kbd>&minus;</kbd> zoom out &middot;
+        <kbd>&larr;</kbd> <kbd>&rarr;</kbd> next planet &middot; <kbd>Esc</kbd> back to all planets</p>
     </div>`;
 }
 
