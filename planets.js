@@ -139,6 +139,7 @@ const countNear = list => list.filter(s => s.near).length;
 /* ================= DRAWING ================= */
 function draw() {
   hideTip();
+  wrap.classList.toggle('zoomed', state.mode === 'zoom');
   if (state.mode === 'zoom') drawZoom(state.focus);
   else drawOverview();
   drawSide();
@@ -154,11 +155,12 @@ function seeded(a) {
     return ((t ^ t >>> 14) >>> 0) / 4294967296;
   };
 }
+// Covers the widest chart (MAX_W), so wide screens get stars right to the edge
 const STARS = (() => {
   const r = seeded(42);
   let out = '<g aria-hidden="true">';
-  for (let i = 0; i < 110; i++) {
-    out += `<circle cx="${(r() * 1200).toFixed(0)}" cy="${(r() * 640).toFixed(0)}" r="${(r() * 1.3 + 0.3).toFixed(2)}" fill="#cdd8ff" opacity="${(r() * 0.5 + 0.1).toFixed(2)}"/>`;
+  for (let i = 0; i < 230; i++) {
+    out += `<circle cx="${(r() * 2600 - 200).toFixed(0)}" cy="${(r() * 640).toFixed(0)}" r="${(r() * 1.3 + 0.3).toFixed(2)}" fill="#cdd8ff" opacity="${(r() * 0.5 + 0.1).toFixed(2)}"/>`;
   }
   return out + '</g>';
 })();
@@ -175,8 +177,7 @@ function defs() {
       <stop offset="100%" stop-color="#000" stop-opacity=".55"/>
     </radialGradient>
     <filter id="glow" x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="16"/></filter>
-  </defs>
-  <text class="chart-ref" x="18" y="26" aria-hidden="true">CHART REF: ARC-42 // SEC. 09</text>`;
+  </defs>`;
 }
 
 let clipId = 0;
@@ -263,12 +264,30 @@ function pill(s, label, lineX, y, side) {
 }
 
 /* ---- Zoomed out: three planets, and the students near each zone line beside that line ---- */
-const OVERVIEW = { calm: { x: 105, y: 270 }, steady: { x: 600, y: 270 }, flare: { x: 1080, y: 270 } };
+/* The chart is always the same height. Its width W follows the shape of the card, so on a
+   wide screen the planets and zone lines spread out to fill it instead of shrinking into
+   the middle. Positions are fractions of W (they match the original 1200-wide layout). */
+const CHART_H = 590; // drawn from y = 10 to 600 (trims empty space, so text is a bit bigger)
+const CHART_TOP = 10;
+const MIN_W = 1200;
+const MAX_W = 2200;
+let W = MIN_W;
+const OVERVIEW = { calm: { y: 270 }, steady: { y: 270 }, flare: { y: 270 } };
 const radiusFor = n => 38 + Math.min(22, Math.sqrt(n) * 3.5);
 const ZONE_LINES = [
-  { value: CALM_MAX,   x: 350, below: 'calm',   above: 'steady' },
-  { value: STEADY_MAX, x: 850, below: 'steady', above: 'flare' },
+  { value: CALM_MAX,   below: 'calm',   above: 'steady' },
+  { value: STEADY_MAX, below: 'steady', above: 'flare' },
 ];
+function layout() {
+  // Ends keep a fixed gap so the outer planets never touch the edge
+  const edge = 105 + (W - MIN_W) * 0.06;
+  OVERVIEW.calm.x = edge;
+  OVERVIEW.steady.x = W / 2;
+  OVERVIEW.flare.x = W - edge - 15;
+  ZONE_LINES[0].x = W * (350 / 1200);
+  ZONE_LINES[1].x = W * (850 / 1200);
+}
+layout();
 const MAX_PER_SIDE = 7;
 const PILL_STEP = 38;
 
@@ -399,7 +418,7 @@ function drawZoom(key) {
 
   // The other two planets, small, in the corners (click to switch)
   const others = ZONES.filter(o => o.key !== key);
-  const corners = [{ x: 110, y: 112 }, { x: 1090, y: 112 }];
+  const corners = [{ x: 110, y: 112 }, { x: W - 110, y: 112 }];
   others.forEach((o, j) => {
     const p = corners[j];
     const n = lists[o.key].length;
@@ -408,7 +427,7 @@ function drawZoom(key) {
     svg += `<text class="mini-sub" x="${p.x}" y="${p.y + 88}">${n} students</text>`;
   });
 
-  const cx = 600, cy = 340, pr = 88, cr = 18;
+  const cx = W / 2, cy = 340, pr = 88, cr = 18;
   const rings = ringLayout(list.length, 140, 44, 44);
   rings.forEach(rg => { svg += `<circle class="orbit" cx="${cx}" cy="${cy}" r="${rg.r}"/>`; });
   svg += planet(z, cx, cy, pr, { count: list.length, label: `${z.name}, ${list.length} students. Back to all planets.` });
@@ -496,8 +515,8 @@ async function showLens(lens) {
 
 /* ================= ZOOM =================
    Only the view zooms. The student chips themselves never move or animate. */
-const FULL = [0, 0, 1200, 640];
-let viewBox = [...FULL];
+const full = () => [0, CHART_TOP, W, CHART_H];
+let viewBox = full();
 let busy = false;
 
 const setViewBox = v => {
@@ -522,7 +541,7 @@ function animateViewBox(to, ms) {
 
 const boxAround = (x, y, R) => {
   const h = R * 2;
-  const w = h * 1200 / 640;
+  const w = h * W / CHART_H;
   return [x - w / 2, y - h / 2, w, h];
 };
 
@@ -552,7 +571,7 @@ async function zoomTo(key) {
   }
   state.mode = 'zoom';
   state.focus = key;
-  setViewBox(FULL);
+  setViewBox(full());
   draw();
   stage.classList.remove('fading');
   if (hadFocus) focusPlanet(key);
@@ -569,7 +588,7 @@ async function zoomOut() {
   draw();
   const p = OVERVIEW[key];
   setViewBox(boxAround(p.x, p.y, radiusFor(zoneLists()[key].length) + 80));
-  await animateViewBox(FULL, 360);
+  await animateViewBox(full(), 360);
   if (hadFocus) focusPlanet(key);
   busy = false;
 }
@@ -698,6 +717,22 @@ find.addEventListener('input', () => {
 find.addEventListener('keydown', e => {
   if (e.key === 'Enter') { e.preventDefault(); findStudent(); }
 });
+
+// Fit the chart to the card: wider card -> wider chart (same height, so text keeps its size)
+const narrow = matchMedia('(max-width: 960px)');
+function fitChart() {
+  const box = wrap.getBoundingClientRect();
+  const next = narrow.matches || !box.height
+    ? MIN_W
+    : Math.round(Math.min(MAX_W, Math.max(MIN_W, CHART_H * box.width / box.height)));
+  if (Math.abs(next - W) < 4) return;
+  W = next;
+  layout();
+  if (busy) return; // the zoom finishes on the new size
+  setViewBox(full());
+  if (state.week !== null) draw();
+}
+new ResizeObserver(fitChart).observe(wrap);
 
 syncButtons();
 loadStudents();
