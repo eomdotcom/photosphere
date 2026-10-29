@@ -5,6 +5,23 @@ const status = document.getElementById('status');
 const openBtn = document.getElementById('open-dashboard');
 const deleteBtn = document.getElementById('delete-data');
 
+// Columns the CSV must have
+const ID_COLUMNS = ['student_id', 'student_name', 'week'];
+
+// Columns the database uses to calculate concern_score.
+// A missing one would count as 0 and give the wrong score, so the upload is stopped.
+const SCORE_COLUMNS = [
+  'quiz_attempts',
+  'distinct_logins_per_week',
+  'avg_days_late',
+  'days_since_last_check_in',
+  'current_grade',
+  'prior_gpa',
+];
+
+// Calculated by the database (a generated column), so it can't come from the file
+const CALCULATED_COLUMNS = ['concern_score'];
+
 openBtn.addEventListener('click', () => {
   window.location.href = 'dashboard.html';
 });
@@ -18,8 +35,9 @@ async function clearWeeks(weeks) {
   if (error) throw error;
 }
 
-// Deletes every row. Supabase refuses a delete with no filter,
+// Deletes every student row. Supabase refuses a delete with no filter,
 // so this matches every row that has a student_id.
+// Adviser notes and cases are in their own tables and are not touched.
 async function clearAll() {
   const { error } = await supabase
     .from('students')
@@ -58,7 +76,8 @@ fileInput.addEventListener('change', async () => {
   try {
     const result = Papa.parse(await file.text(), {
       header: true,
-      skipEmptyLines: true
+      skipEmptyLines: true,
+      transformHeader: h => h.trim(),
     });
 
     if (result.errors.length) {
@@ -68,21 +87,36 @@ fileInput.addEventListener('change', async () => {
       throw new Error(where + e.message);
     }
 
-    const records = result.data.map(row => {
-      for (const key in row) {
-        if (row[key] === '') row[key] = null;
-      }
-      return row;
-    });
+    const columns = result.meta.fields || [];
 
     // Check BEFORE deleting anything, so a bad file can't wipe good data
-    if (records.length === 0) {
+    if (result.data.length === 0) {
       throw new Error('The CSV has no data rows.');
     }
-    if (!('student_id' in records[0]) || !('week' in records[0])) {
-      throw new Error('The CSV needs student_id and week columns.');
+    const missingIds = ID_COLUMNS.filter(c => !columns.includes(c));
+    if (missingIds.length) {
+      throw new Error(`The CSV needs these columns: ${missingIds.join(', ')}.`);
     }
-    if (records.some(r => r.week === null)) {
+    const missingScore = SCORE_COLUMNS.filter(c => !columns.includes(c));
+    if (missingScore.length) {
+      throw new Error(
+        `The CSV is missing columns used for the concern score: ${missingScore.join(', ')}. ` +
+        'Nothing was saved.'
+      );
+    }
+
+    // Drop calculated columns (e.g. concern_score) and turn blanks into nulls
+    const ignored = CALCULATED_COLUMNS.filter(c => columns.includes(c));
+    const records = result.data.map(row => {
+      const record = {};
+      for (const key in row) {
+        if (CALCULATED_COLUMNS.includes(key)) continue;
+        record[key] = row[key] === '' ? null : row[key];
+      }
+      return record;
+    });
+
+    if (records.some(r => r.week === null || r.week === undefined)) {
       throw new Error('Some rows have no week value.');
     }
 
@@ -96,7 +130,10 @@ fileInput.addEventListener('change', async () => {
     if (error) throw error;
 
     await refreshStatus();
-    status.textContent = `Saved ${records.length} rows for week ${weeksInFile.join(', ')}. ` + status.textContent;
+    status.textContent =
+      `Saved ${records.length} rows for week ${weeksInFile.join(', ')}, and the database calculated their concern scores. ` +
+      (ignored.length ? `(The file's ${ignored.join(', ')} column was ignored.) ` : '') +
+      status.textContent;
 
   } catch (error) {
     console.error(error);
@@ -106,9 +143,9 @@ fileInput.addEventListener('change', async () => {
   fileInput.value = '';
 });
 
-// Delete button: clears every week
+// Delete button: clears every week of student data (notes and cases are kept)
 deleteBtn.addEventListener('click', async () => {
-  if (!confirm('Delete all student rows from Supabase? This cannot be undone.')) return;
+  if (!confirm('Delete all student data from Supabase? This cannot be undone.\n\nAdviser notes and cases are kept.')) return;
 
   try {
     await clearAll();
