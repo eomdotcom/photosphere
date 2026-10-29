@@ -35,6 +35,7 @@ const state = {
   labels: new Map(), // student id -> unique initials for this week
   students: [],      // this week's students: { id, name, score, zone, near }
   mode: 'overview',  // 'overview' (zoomed out) or 'zoom' (zoomed in)
+  lens: 'near',      // zoomed out: 'near' (near a zone line) or 'moved' (changed zone)
   focus: null,       // which zone is zoomed in
   hover: null,       // last planet the mouse was over
 };
@@ -271,6 +272,33 @@ const ZONE_LINES = [
 const MAX_PER_SIDE = 7;
 const PILL_STEP = 38;
 
+// Students who changed zone across this line, ending up in zoneKey.
+// A jump of two zones (Calm <-> Solar Flare) is shown at the line next to the new zone.
+function crossedTo(line, zoneKey) {
+  return state.students.filter(s => {
+    if (!s.moved || s.zone !== zoneKey) return false;
+    const from = Z[s.prev.zone].i, to = Z[s.zone].i;
+    const lineIdx = ZONE_LINES.indexOf(line);       // 0 = 30 line (between 0 and 1), 1 = 60 line
+    const crossed = to > from ? to - 1 : to;        // the line next to the new zone
+    return crossed === lineIdx;
+  });
+}
+
+// A name pill for someone who changed zone: arrow + name, coloured by direction
+function movedPill(s, label, lineX, y, side) {
+  const z = Z[s.zone];
+  const text = `${s.moved === 'up' ? '\u25B2' : '\u25BC'} ${label}`;
+  const w = Math.round(text.length * 8.6 + 24);
+  const x = side === 'left' ? lineX - 6 - w : lineX + 6;
+  const aria = `${s.name}, ${movedText(s)}, now in ${z.name}. Open student details.`;
+  return `<a class="chip pill moved-pill ${s.moved}" href="${esc(studentUrl(s))}" data-id="${esc(s.id)}" aria-label="${esc(aria)}"
+      transform="translate(${x.toFixed(1)} ${(y - PILL_H / 2).toFixed(1)})" style="--zc:${z.color}">
+    <rect class="chip-focus" x="-5" y="-5" width="${w + 10}" height="${PILL_H + 10}" rx="${(PILL_H + 10) / 2}"/>
+    <rect class="chip-bg" width="${w}" height="${PILL_H}" rx="${PILL_H / 2}"/>
+    <text class="pill-text" x="${w / 2}" y="${PILL_H / 2}" dy=".35em">${esc(text)}</text>
+  </a>`;
+}
+
 function drawOverview() {
   const lists = zoneLists();
   const names = shortNames(state.students);
@@ -293,37 +321,45 @@ function drawOverview() {
     }
   });
 
-  // The zone lines, with near-line students on their own zone's side
+  // The zone lines. Beside each line: near-line students, or (Changed zone) students who crossed it
+  const moved = state.lens === 'moved';
   ZONE_LINES.forEach(line => {
-    const left = lists[line.below].filter(s => s.near && s.near.toward === line.above);
-    const right = lists[line.above].filter(s => s.near && s.near.toward === line.below);
+    const left = moved
+      ? crossedTo(line, line.below)
+      : lists[line.below].filter(s => s.near && s.near.toward === line.above);
+    const right = moved
+      ? crossedTo(line, line.above)
+      : lists[line.above].filter(s => s.near && s.near.toward === line.below);
 
     svg += `<text class="line-num" x="${line.x}" y="88">${line.value}</text>`;
     svg += `<text class="line-cap" x="${line.x}" y="110">zone line</text>`;
     svg += `<line class="zone-line" x1="${line.x}" y1="124" x2="${line.x}" y2="420"/>`;
 
     if (!left.length && !right.length) {
-      svg += `<text class="line-cap" x="${line.x}" y="275">No one within ${MARGIN} points</text>`;
+      svg += `<text class="line-cap" x="${line.x}" y="275">${moved ? 'No one crossed this line' : `No one within ${MARGIN} points`}</text>`;
       return;
     }
 
     [[left, 'left', line.below], [right, 'right', line.above]].forEach(([group, side, zoneKey]) => {
       if (!group.length) return;
-      group.sort((a, b) => a.near.dist - b.near.dist);
+      if (moved) group.sort((a, b) => b.score - a.score);
+      else group.sort((a, b) => a.near.dist - b.near.dist);
       const shown = group.slice(0, MAX_PER_SIDE);
       const extra = group.length - shown.length;
       const rows = shown.length + (extra > 0 ? 1 : 0);
       const top = OVERVIEW.steady.y - ((rows - 1) * PILL_STEP) / 2;
 
       shown.forEach((s, k) => {
-        svg += pill(s, names.get(s.id), line.x, top + k * PILL_STEP, side);
+        svg += moved
+          ? movedPill(s, names.get(s.id), line.x, top + k * PILL_STEP, side)
+          : pill(s, names.get(s.id), line.x, top + k * PILL_STEP, side);
       });
 
       if (extra > 0) {
         const y = top + shown.length * PILL_STEP;
         const x = side === 'left' ? line.x - 6 - 90 : line.x + 6;
         svg += `<g class="more" role="button" tabindex="0" data-zone="${zoneKey}"
-            aria-label="${extra} more near the ${line.value} line in ${esc(Z[zoneKey].name)}. Show everyone."
+            aria-label="${extra} more ${moved ? 'moved into' : `near the ${line.value} line in`} ${esc(Z[zoneKey].name)}. Show everyone."
             transform="translate(${x} ${(y - PILL_H / 2).toFixed(1)})">
           <rect width="90" height="${PILL_H}" rx="${PILL_H / 2}"/>
           <text x="45" y="${PILL_H / 2}" dy=".35em">+${extra} more</text></g>`;
@@ -331,7 +367,9 @@ function drawOverview() {
     });
   });
 
-  svg += `<text class="hint" x="600" y="590">Hover a name for the score &#183; click it to open their details &#183; click a planet to see everyone &#183; help below the chart</text>`;
+  svg += moved
+    ? `<text class="hint" x="600" y="590">Names sit beside the line they crossed, on their new zone's side &#183; amber moved up, teal moved down &#183; click a name to open their details</text>`
+    : `<text class="hint" x="600" y="590">Hover a name for the score &#183; click it to open their details &#183; click a planet to see everyone &#183; help below the chart</text>`;
   stage.innerHTML = svg;
 }
 
@@ -417,7 +455,16 @@ function drawSide() {
   const lists = zoneLists();
   let h = '';
 
-  if (state.mode === 'overview') {
+  if (state.mode === 'overview' && state.lens === 'moved') {
+    const movers = state.students.filter(s => s.moved)
+      .sort((a, b) => (a.moved === b.moved ? b.score - a.score : a.moved === 'up' ? -1 : 1));
+    h += `<h2>Changed zone</h2><p>Since week ${state.prevWeek}.</p>`;
+    const up = movers.filter(s => s.moved === 'up');
+    const down = movers.filter(s => s.moved === 'down');
+    if (up.length) h += `<h3><span class="pl-dot" style="--c:var(--amber)"></span>Moved up a zone</h3><ul class="pl-rows">${up.map(row).join('')}</ul>`;
+    if (down.length) h += `<h3><span class="pl-dot" style="--c:var(--teal)"></span>Moved down a zone</h3><ul class="pl-rows">${down.map(row).join('')}</ul>`;
+    if (!movers.length) h += `<p class="pl-empty">No one changed zone since week ${state.prevWeek}.</p>`;
+  } else if (state.mode === 'overview') {
     h += `<h2>Near a zone line</h2>
       <p>Within ${MARGIN} points of ${CALM_MAX} or ${STEADY_MAX}.</p>`;
     const pairs = [['calm', 'steady'], ['steady', 'calm'], ['steady', 'flare'], ['flare', 'steady']];
@@ -433,17 +480,6 @@ function drawSide() {
         <ul class="pl-rows">${group.map(row).join('')}</ul>`;
     });
     if (!any) h += `<p class="pl-empty">No one is within ${MARGIN} points of a zone line this week.</p>`;
-
-    // Who changed zone since the week before
-    if (state.prevWeek !== null) {
-      const movers = state.students.filter(s => s.moved)
-        .sort((a, b) => (a.moved === b.moved ? b.score - a.score : a.moved === 'up' ? -1 : 1));
-      h += `<h2 class="pl-h2-gap">Changed zone</h2>
-        <p>Since week ${state.prevWeek}.</p>`;
-      h += movers.length
-        ? `<ul class="pl-rows">${movers.map(row).join('')}</ul>`
-        : `<p class="pl-empty">No one changed zone since week ${state.prevWeek}.</p>`;
-    }
   } else {
     const z = Z[state.focus];
     const list = lists[state.focus];
@@ -458,10 +494,26 @@ function drawSide() {
   side.scrollTop = 0;
 }
 
-// Highlight whichever mode is showing (zoomed out = near a zone line, zoomed in = everyone)
+// Highlight whichever view is showing: Everyone (zoomed in), Near a zone line, Changed zone
 function syncButtons() {
-  $('zoom-out').setAttribute('aria-pressed', String(state.mode === 'overview'));
+  const movedBtn = $('lens-moved');
+  const noEarlier = state.prevWeek === null;
+  movedBtn.disabled = noEarlier;
+  movedBtn.title = noEarlier
+    ? `Week ${state.week ?? ''} is the first week, so there's nothing to compare with`
+    : `Who changed zone since week ${state.prevWeek}`;
+  if (noEarlier && state.lens === 'moved') state.lens = 'near';
+
   $('zoom-in').setAttribute('aria-pressed', String(state.mode === 'zoom'));
+  $('zoom-out').setAttribute('aria-pressed', String(state.mode === 'overview' && state.lens === 'near'));
+  movedBtn.setAttribute('aria-pressed', String(state.mode === 'overview' && state.lens === 'moved'));
+}
+
+// Switch the zoomed-out view between "Near a zone line" and "Changed zone"
+async function showLens(lens) {
+  state.lens = lens;
+  if (state.mode === 'zoom') await zoomOut();
+  else draw();
 }
 
 /* ================= ZOOM =================
@@ -623,7 +675,8 @@ side.addEventListener('pointerleave', () => highlight(null));
 side.addEventListener('focusin', e => highlight(e.target.closest('a[data-id]')?.dataset.id));
 
 $('zoom-in').addEventListener('click', () => zoomTo(state.hover || defaultZone()));
-$('zoom-out').addEventListener('click', zoomOut);
+$('zoom-out').addEventListener('click', () => showLens('near'));
+$('lens-moved').addEventListener('click', () => showLens('moved'));
 
 document.addEventListener('keydown', e => {
   if (e.target.closest('input, textarea, select') || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -690,7 +743,7 @@ function drawHelp() {
     </div>
     <div class="pl-help-item">
       <h3>Changed zone</h3>
-      <p>Compared with the week before. Under each planet: how many students are new to that zone.</p>
+      <p>Compared with the week before. Press <strong>Changed zone</strong> to see who crossed each line; under each planet is how many are new to that zone.</p>
       <p class="pl-help-soft">In the side panel, <span class="moved up">amber</span> moved up into a higher-concern zone,
         <span class="moved down">teal</span> moved down.</p>
     </div>
