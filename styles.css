@@ -1143,3 +1143,81 @@ button.danger:hover:not(:disabled) {
   html { font-size: 24px; }
   .dashboard-main { max-width: 2600px; }
 }
+
+/* ---------- Upload page laid out like the dashboard ---------- */
+.upload-page .steps {
+  margin-top: 1.2rem;
+}
+
+.upload-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.2rem;
+  align-items: stretch;
+  margin-top: 1.2rem;
+}
+
+.upload-page .upload-box,
+.upload-page .loaded {
+  max-width: none;
+  margin: 0;
+  padding: 1.5rem;
+  border-radius: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.upload-page .loaded {
+  background: var(--bg-panel);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.upload-page h2 {
+  margin: 0 0 0.9rem;
+  font-size: 1.3rem;
+}
+
+.upload-page label {
+  margin-bottom: 0.5rem;
+}
+
+.upload-page #status {
+  margin: 1.2rem 0 0;
+}
+
+.upload-page #open-dashboard {
+  align-self: flex-start;
+  margin: 1rem 0 0;
+}
+
+/* Delete sits at the bottom of the "Currently loaded" card */
+.upload-page .loaded .loaded-weeks {
+  flex: 1;
+}
+
+.upload-page .delete-wrap {
+  margin-top: 1.2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(149, 181, 255, 0.12);
+  text-align: right;
+}
+
+.upload-page .delete-wrap button {
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .upload-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .upload-page .delete-wrap {
+    text-align: left;
+  }
+}
+
+.upload-page #status,
+.upload-page .delete-wrap .hint-soft {
+  max-width: none;
+}
