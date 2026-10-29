@@ -7,9 +7,9 @@ Adviser-facing proof-of-concept for INFOMGMT 399 (Project 2: early-warning tool 
 ## Overview
 Photosphere categorizes students into three engagement zones (Calm Orbit, Steady Star, and Solar Flare Zone) using a transparent, rule-based scoring system derived from early-semester engagement data.
 
-* **Transparent Factors:** Individual student pages explain in plain language which factors contributed to their zone placement.
-* **Adviser-Led:** The tool does not make decisions or predict dropouts, it provides insights to help advisers decide appropriate follow-ups.
-* **Data Privacy:** All data used in this project is strictly synthetic.
+* Individual student pages explain in plain language which factors contributed to their zone placement.
+* The tool does not make decisions or predict dropouts, it provides insights to help advisers decide appropriate follow-ups.
+* All data used in this project is strictly synthetic.
   
 ### Prerequisites
 * VS Code with the **Live Server** extension installed.
