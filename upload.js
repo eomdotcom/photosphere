@@ -46,34 +46,45 @@ async function clearAll() {
   if (error) throw error;
 }
 
-// Which file each week came from, remembered in this browser
-// (Supabase doesn't keep file names). e.g. { "5": { name: "week5.csv", at: "..." } }
-const FILES_KEY = 'photosphere-week-files';
-
-function weekFiles() {
-  try {
-    return JSON.parse(localStorage.getItem(FILES_KEY) || '{}');
-  } catch {
-    return {};
-  }
-}
-
-function rememberFile(name, weeks) {
-  const files = weekFiles();
-  const at = new Date().toISOString();
-  weeks.forEach(w => { files[weekNumber(w)] = { name, at }; });
-  try {
-    localStorage.setItem(FILES_KEY, JSON.stringify(files));
-  } catch { /* storage blocked: fine */ }
-}
-
 const weekNumber = w => {
   const m = String(w ?? '').match(/\d+/);
   return m ? Number(m[0]) : null;
 };
 
-// "Currently loaded": one line per week with the file it came from
-function showLoaded(rows) {
+const formatWhen = iso => new Date(iso).toLocaleString('en-NZ', {
+  day: 'numeric', month: 'short', year: 'numeric', hour: 'numeric', minute: '2-digit',
+});
+
+// Record which file each week came from, in Supabase (the "dataset_uploads" table),
+// so every computer sees the same file name and upload time.
+async function recordUpload(fileName, records) {
+  const counts = new Map();
+  records.forEach(r => {
+    const w = weekNumber(r.week);
+    if (w !== null) counts.set(w, (counts.get(w) || 0) + 1);
+  });
+  const rows = [...counts].map(([week, row_count]) => ({ week, file_name: fileName, row_count }));
+  const { error } = await supabase.from('dataset_uploads').insert(rows);
+  return error;
+}
+
+// Latest upload record for each week: Map of week -> { file_name, uploaded_at, row_count }
+async function latestUploads() {
+  const { data, error } = await supabase
+    .from('dataset_uploads')
+    .select('week, file_name, row_count, uploaded_at')
+    .order('uploaded_at', { ascending: false });
+  const latest = new Map();
+  if (error) {
+    console.warn('Upload history unavailable:', error.message);
+    return { latest, error };
+  }
+  data.forEach(u => { if (!latest.has(u.week)) latest.set(u.week, u); });
+  return { latest, error: null };
+}
+
+// "Currently loaded": one line per week with the file it came from and when
+function showLoaded(rows, latest, historyError) {
   const list = document.getElementById('loaded-weeks');
   list.innerHTML = '';
 
@@ -83,7 +94,6 @@ function showLoaded(rows) {
     if (w !== null) counts.set(w, (counts.get(w) || 0) + 1);
   });
   const weeks = [...counts.keys()].sort((a, b) => a - b);
-  const files = weekFiles();
 
   if (!weeks.length) {
     const li = document.createElement('li');
@@ -102,23 +112,21 @@ function showLoaded(rows) {
 
     const file = document.createElement('span');
     file.className = 'loaded-name';
-    const info = files[w];
-    if (info) {
-      file.textContent = info.name;
-      file.title = info.name;
-    } else {
-      file.textContent = 'Uploaded from another computer';
-      file.classList.add('unknown');
-    }
-
     const meta = document.createElement('span');
     meta.className = 'loaded-meta';
-    const when = info
-      ? ' \u00B7 ' + new Date(info.at).toLocaleString('en-NZ', {
-          day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit',
-        })
-      : '';
-    meta.textContent = `${counts.get(w)} students${when}`;
+
+    const record = latest.get(w);
+    if (record) {
+      file.textContent = record.file_name;
+      file.title = record.file_name;
+      meta.textContent = `${counts.get(w)} students \u00B7 uploaded ${formatWhen(record.uploaded_at)}`;
+    } else {
+      file.textContent = historyError
+        ? 'Upload history unavailable'
+        : 'Not recorded (uploaded before file names were tracked)';
+      file.classList.add('unknown');
+      meta.textContent = `${counts.get(w)} students`;
+    }
 
     li.append(week, file, meta);
     list.appendChild(li);
@@ -137,7 +145,8 @@ async function refreshStatus() {
     return;
   }
 
-  showLoaded(data);
+  const { latest, error: historyError } = await latestUploads();
+  showLoaded(data, latest, historyError);
   const weeks = new Set(data.map(r => weekNumber(r.week)).filter(w => w !== null));
 
   if (data.length > 0) {
@@ -212,11 +221,12 @@ fileInput.addEventListener('change', async () => {
     const { error } = await supabase.from('students').insert(records);
     if (error) throw error;
 
-    rememberFile(file.name, weeksInFile);
+    const logError = await recordUpload(file.name, records);
     await refreshStatus();
     status.textContent =
       `Saved ${records.length} rows for week ${weeksInFile.join(', ')}, and the database calculated their concern scores. ` +
       (ignored.length ? `(The file's ${ignored.join(', ')} column was ignored.) ` : '') +
+      (logError ? `(The file name couldn't be recorded: ${logError.message}) ` : '') +
       status.textContent;
 
   } catch (error) {
@@ -233,7 +243,6 @@ deleteBtn.addEventListener('click', async () => {
 
   try {
     await clearAll();
-    try { localStorage.removeItem(FILES_KEY); } catch { /* fine */ }
     await refreshStatus();
   } catch (error) {
     console.error(error);
