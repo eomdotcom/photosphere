@@ -134,7 +134,7 @@
 .zones .zone {
   display: flex;
   flex-direction: column;
-  height: clamp(380px, 60vh, 640px);
+  height: var(--view-h);
 }
 
 .zones .zone .list-rows {

@@ -6,8 +6,6 @@ import { CALM_MAX, STEADY_MAX, MARGIN } from './zones.js';
 // The first three columns are the same everywhere; the last one explains the current page.
 // Numbers come from zones.js, so changing a cut-off updates the help too.
 
-const OPEN_KEY = 'photosphere-help-open'; // remembered across pages
-
 const dot = colour => `<span class="pl-dot" style="--c:var(${colour})"></span>`;
 
 const THIS_PAGE = {
@@ -37,11 +35,9 @@ const THIS_PAGE = {
 };
 
 export function renderHelp(el, page) {
-  let open = true;
-  try { open = localStorage.getItem(OPEN_KEY) !== 'closed'; } catch { /* storage blocked */ }
-
+  // Always starts closed on every page, to keep pages uncluttered. Click to open.
   el.innerHTML = `
-    <details class="pl-help"${open ? ' open' : ''}>
+    <details class="pl-help">
       <summary>How to read this</summary>
       <div class="pl-help-grid">
         <div class="pl-help-item">
@@ -70,10 +66,6 @@ export function renderHelp(el, page) {
       </div>
     </details>`;
 
-  // Remember open/closed, so it stays the same on every page
-  el.querySelector('details').addEventListener('toggle', e => {
-    try { localStorage.setItem(OPEN_KEY, e.target.open ? 'open' : 'closed'); } catch { /* fine */ }
-  });
 }
 
 const strip = document.getElementById('help-strip');
