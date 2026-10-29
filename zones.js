@@ -6,7 +6,7 @@ export const CALM_MAX = 30;
 export const STEADY_MAX = 60;
 
 // "Near a zone line" = within this many points of 30 or 60
-export const MARGIN = 5;
+export const MARGIN = 2;
 
 export const ZONES = [
   { key: 'calm',   name: 'Calm Orbit',       blurb: 'No sign of extra attention needed right now' },

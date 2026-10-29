@@ -128,7 +128,7 @@ function makeRow(s) {
 
   const near = document.createElement('span');
   near.className = 'near';
-  if (s.near) {
+  if (s.near && filter !== 'moved') { // arrows mean 'near a line'; not shown in Changed zone
     near.classList.add(s.near.dir === 'up' ? 'to-up' : 'to-down');
     near.title = nearText(s.near);
     near.textContent = s.near.dir === 'up' ? '▲' : '▼';
