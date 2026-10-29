@@ -62,49 +62,13 @@
       </section>
     </div>
 
-    <!-- How to read the dashboard (numbers are filled in from zones.js below) -->
-    <details class="pl-help" open>
-      <summary>How to read the dashboard</summary>
-      <div class="pl-help-grid">
-        <div class="pl-help-item">
-          <h3>Zones</h3>
-          <p>Each student's concern score places them in one zone:</p>
-          <ul>
-            <li><span class="pl-dot" style="--c:var(--teal)"></span><strong>Calm Orbit</strong> <span data-n="calm"></span> or less</li>
-            <li><span class="pl-dot" style="--c:var(--purple)"></span><strong>Steady Star</strong> above <span data-n="calm"></span>, up to <span data-n="steady"></span></li>
-            <li><span class="pl-dot" style="--c:var(--amber)"></span><strong>Solar Flare Zone</strong> over <span data-n="steady"></span></li>
-          </ul>
-        </div>
-        <div class="pl-help-item">
-          <h3>Near a zone line</h3>
-          <p>Students within <strong><span data-n="margin"></span> points</strong> of <span data-n="calm"></span> or <span data-n="steady"></span>: a small change could move them into the next zone.</p>
-          <p class="pl-help-soft"><strong>List:</strong> marked &#9650; (close to the zone above) or &#9660; (below).
-            <strong>Planets:</strong> their names sit beside the dashed line.</p>
-        </div>
-        <div class="pl-help-item">
-          <h3>Changed zone</h3>
-          <p>Students in a different zone from the week before. Not available for the first week.</p>
-          <p class="pl-help-soft"><strong>List:</strong> shows "was Calm Orbit" under the name.
-            <strong>Planets:</strong> <span class="moved up">amber</span> moved up a zone, <span class="moved down">teal</span> moved down.</p>
-        </div>
-        <div class="pl-help-item">
-          <h3>Cases and notes</h3>
-          <p>Solar Flare Zone students get a case: New &rarr; Contacted &rarr; Meeting &rarr; Support plan &rarr; Closed.</p>
-          <p class="pl-help-soft">Click any student to open their page, update the case and add adviser notes.
-            A zone is a prompt to look closer, not a decision.</p>
-        </div>
-      </div>
-    </details>
+    <!-- How to read this (shared with every page; filled by help.js) -->
+    <div id="help-strip" data-page="upload"></div>
   </main>
 
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
 <script type="module" src="upload.js"></script>
-<script type="module">
-  // Keep the help text in step with the real cut-offs
-  import { CALM_MAX, STEADY_MAX, MARGIN } from './zones.js';
-  const n = { calm: CALM_MAX, steady: STEADY_MAX, margin: MARGIN };
-  document.querySelectorAll('[data-n]').forEach(el => { el.textContent = n[el.dataset.n]; });
-</script>
+<script type="module" src="help.js"></script>
 
 </body>
 </html>

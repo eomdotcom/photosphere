@@ -20,6 +20,7 @@
     <a class="back-link" id="back" href="dashboard.html">&larr; Back to dashboard</a>
 
     <h1>Student details</h1>
+    <p>A zone is a prompt to look closer, not a decision about a student.</p>
 
     <!-- Profile summary -->
     <section class="student-card">
@@ -97,7 +98,11 @@
       <h3>Previous notes</h3>
       <ul class="note-list" id="note-list"></ul>
     </section>
+
+    <!-- How to read this (shared with every page; filled by help.js) -->
+    <div id="help-strip" data-page="student"></div>
   </main>
+  <script type="module" src="help.js"></script>
 
   <script type="module">
     import { supabase } from './supabase.js';

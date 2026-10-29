@@ -18,6 +18,7 @@
 
   <main class="dashboard-main">
     <h1>Dashboard</h1>
+    <p>A zone is a prompt to look closer, not a decision about a student.</p>
 
     <nav class="view-switch" aria-label="Dashboard view">
       <a href="dashboard.html" aria-current="page">List</a>
@@ -43,13 +44,8 @@
     </div>
 
     <div class="summary" id="dashboard-status" aria-live="polite">Loading students...</div>
-    <p class="list-key">
-      <span class="near to-up" aria-hidden="true">&#9650;</span> close to the zone above
-      <span class="sep" aria-hidden="true">&middot;</span>
-      <span class="near to-down" aria-hidden="true">&#9660;</span> close to the zone below
-      <span class="sep" aria-hidden="true">&middot;</span>
-      within 2 points of the 30 or 60 line
-    </p>
+    <!-- How to read this (shared with every page; filled by help.js) -->
+    <div id="help-strip" data-page="list"></div>
 
     <!-- The three zones (filled by dashboard.js) -->
     <section class="zones">
@@ -74,5 +70,6 @@
     </section>
   </main>
   <script type="module" src="dashboard.js"></script>
+  <script type="module" src="help.js"></script>
 </body>
 </html>
