@@ -1,33 +1,39 @@
-# Photosphere 
+# Photosphere
 
-**By Team FourCast:** Esuru Nanayakkara, Hani Patel, Rafael Carreon, Sophia Kwong
+**Team FourCast:** Esuru Nanayakkara, Hani Patel, Rafael Carreon, Sophia Kwong
 
-Adviser-facing proof-of-concept for INFOMGMT 399 (Project 2: early-warning tool for student engagement).
+An adviser-facing early-warning dashboard for student engagement, built for INFOMGMT 399 at the University of Auckland.
 
 ## Overview
-Photosphere categorizes students into three engagement zones (Calm Orbit, Steady Star, and Solar Flare Zone) using a transparent, rule-based scoring system derived from early-semester engagement data.
+Photosphere sorts students into three zones (**Calm Orbit**, **Steady Star** and **Solar Flare Zone**) using a transparent, rule-based concern score. It does not make decisions or predict dropouts. It helps advisers see where a closer look may be needed.
 
-* Individual student pages explain in plain language which factors contributed to their zone placement.
-* The tool does not make decisions or predict dropouts, it provides insights to help advisers decide appropriate follow-ups.
-* All data used in this project is strictly synthetic.
-  
-### Prerequisites
-* VS Code with the **Live Server** extension installed.
-  
-### Setup & Running
-1. Clone the GitHub repository to your local machine. 
-2. Open the project directory in VS Code. 
-3. Launch the application using VS Code Live Server (e.g., click "Go Live" at the bottom right).
-(Note: Opening index.html directly in a browser won't work due to ES module imports.)
+All data in this project is synthetic.
 
-### Usage & Data Setup
-1. Upload Data: Navigate to the Upload page (index.html) and submit a CSV file.
-   * Required CSV Columns: record_id, student_id, student_name, course_code, course_offering_period, week, distinct_logins_per_week, quiz_attempts, avg_days_late, current_grade, prior_gpa, days_since_last_check_in, gender_group, learner_region, age_group, area_deprivation_band, created_at.
-   * Data is stored in Supabase (students table). New uploads add missing rows or overwrite duplicates.
-   * Sample files for weeks 1, 3 and 5 are in `data/synthetic/` (60 students each, fully synthetic).
-2. View Dashboard: Open the dashboard to explore student engagement metrics.
+## Features
+- **Upload:** add one CSV per week. Files are checked before anything is saved.
+- **Dashboard:** view students by week as a list or as planets, and filter for those near a zone line or who changed zone.
+- **Student details:** concern score, key metrics and week-by-week history.
+- **Case tracking and adviser notes:** follow up on Solar Flare Zone students and keep a record of each interaction.
 
-## Pages
-- `index.html` (Upload): Upload a new CSV dataset to Supabase or clear existing saved data.
-- `dashboard.html`: (Dashboard): Features an interactive zone map with a week selector, highlights "students worth a look,".
-- `student.html`: (Student Detail): View specific student profile details for a selected week, including zone badges, key metrics, week-by-week trends, and adviser notes.
+## How it works
+- **Frontend:** HTML, CSS and JavaScript
+- **Database:** Supabase (PostgreSQL)
+- The **concern score** (0–100) is calculated in the database from grades, GPA, check-ins, logins, lateness and quiz attempts.
+- **Zones:** 30 or below is Calm Orbit, above 30 up to 60 is Steady Star, and above 60 is Solar Flare Zone.
+
+## Getting started
+1. Clone the repository and open the folder in VS Code.
+2. Install the **Live Server** extension.
+3. Click **Go Live** to open the app.
+
+Opening the HTML files directly in a browser won't work, because the pages use JavaScript modules.
+
+## Data format
+Each CSV needs these columns:
+`student_id`, `student_name`, `week`, `distinct_logins_per_week`, `quiz_attempts`, `avg_days_late`, `current_grade`, `prior_gpa`, `days_since_last_check_in`
+
+Do not include `concern_score`, because the database calculates it.
+
+## Limitations
+- Data is synthetic, and the score weights and zone cut-offs are provisional.
+- There is no adviser login yet. A production version would add authentication and role-based access.
