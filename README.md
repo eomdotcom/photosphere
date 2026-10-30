@@ -24,7 +24,8 @@ Photosphere categorizes students into three engagement zones (Calm Orbit, Steady
 1. Upload Data: Navigate to the Upload page (index.html) and submit a CSV file.
    * Required CSV Columns: record_id, student_id, student_name, course_code, course_offering_period, week, distinct_logins_per_week, quiz_attempts, avg_days_late, current_grade, prior_gpa, days_since_last_check_in, gender_group, learner_region, age_group, area_deprivation_band, created_at.
    * Data is stored in Supabase (students table). New uploads add missing rows or overwrite duplicates.
-3. View Dashboard: Open the dashboard to explore student engagement metrics.
+   * Sample files for weeks 1, 3 and 5 are in `data/synthetic/` (60 students each, fully synthetic).
+2. View Dashboard: Open the dashboard to explore student engagement metrics.
 
 ## Pages
 - `index.html` (Upload): Upload a new CSV dataset to Supabase or clear existing saved data.
