@@ -1,0 +1,61 @@
+record_id,student_id,student_name,course_code,course_offering_period,week,distinct_logins_per_week,quiz_attempts,avg_days_late,current_grade,prior_gpa,days_since_last_check_in,gender_group,learner_region,age_group,area_deprivation_band,created_at
+121,202600001,Aria Patel,CS101,2026-S1,5,1,0,6.3,44.4,2.17,10,Male,Auckland,18-21,Decile 7,3/2/2026 8:00
+122,202600002,Liam Taylor,DATA201,2026-S1,5,3,0,2.3,67.7,2.79,6,Male,Wellington,22-25,Decile 10,3/2/2026 8:00
+123,202600003,Mateo Williams,ENG102,2026-S1,5,4,0,2.7,66.2,3.15,4,Female,Canterbury,18-21,Decile 5,3/2/2026 8:00
+124,202600004,Sophia Moore,MATH101,2026-S1,5,5,1,0.1,81.1,3.34,2,Female,Auckland,22-25,Decile 5,3/2/2026 8:00
+125,202600005,Kahu Jackson,CS101,2026-S1,5,5,3,0.5,83.8,3.76,1,Female,Auckland,18-21,Decile 4,3/2/2026 8:00
+126,202600006,Emma Martin,DATA201,2026-S1,5,2,1,7.1,36,2.21,12,Female,Wellington,18-21,Decile 2,3/2/2026 8:00
+127,202600007,Noah Martinez,ENG102,2026-S1,5,0,0,5.7,49.4,2.12,8,Prefer not to say,Waikato,26-30,Decile 3,3/2/2026 8:00
+128,202600008,Olivia Rodriguez,MATH101,2026-S1,5,4,0,1.5,66.4,3.1,2,Female,Otago,26-30,Decile 5,3/2/2026 8:00
+129,202600009,Ethan Walker,CS101,2026-S1,5,3,0,3.2,66.2,2.88,5,Male,Canterbury,18-21,Decile 5,3/2/2026 8:00
+130,202600010,Ava Young,DATA201,2026-S1,5,4,1,0.5,86.4,3.75,2,Female,Wellington,18-21,Decile 3,3/2/2026 8:00
+131,202600011,Lucas Wright,ENG102,2026-S1,5,4,3,0.4,90,3.47,0,Male,Auckland,26-30,Decile 2,3/2/2026 8:00
+132,202600012,Isabella Scott,MATH101,2026-S1,5,1,1,5.1,52.4,2.06,18,Female,Auckland,22-25,Decile 4,3/2/2026 8:00
+133,202600013,Mason Baker,CS101,2026-S1,5,0,0,4.4,60.2,2,11,Male,Wellington,22-25,Decile 4,3/2/2026 8:00
+134,202600014,Mia Silva,DATA201,2026-S1,5,4,1,1.7,67.1,2.65,2,Male,Auckland,18-21,Decile 4,3/2/2026 8:00
+135,202600015,Oliver Wilson,ENG102,2026-S1,5,2,2,3.2,71.8,3.18,5,Female,Auckland,22-25,Decile 2,3/2/2026 8:00
+136,202600016,Charlotte Jones,MATH101,2026-S1,5,4,2,0.2,95.6,3.82,2,Male,Manawatu-Whanganui,18-21,Decile 6,3/2/2026 8:00
+137,202600017,Elijah Miller,CS101,2026-S1,5,6,2,0.3,92.9,3.34,0,Male,Auckland,18-21,Decile 9,3/2/2026 8:00
+138,202600018,Amelia Thomas,DATA201,2026-S1,5,2,0,7.4,43.7,1.89,17,Male,Auckland,18-21,Decile 8,3/2/2026 8:00
+139,202600019,James Harris,ENG102,2026-S1,5,1,0,6,51.5,2.18,20,Male,Wellington,18-21,Decile 4,3/2/2026 8:00
+140,202600020,Harper Garcia,MATH101,2026-S1,5,2,1,1.8,71.9,2.93,3,Prefer not to say,Wellington,26-30,Decile 5,3/2/2026 8:00
+141,202600021,Benjamin Clark,CS101,2026-S1,5,3,0,2.7,72.1,2.75,5,Female,Otago,18-21,Decile 9,3/2/2026 8:00
+142,202600022,Evelyn Lee,DATA201,2026-S1,5,4,1,0.6,92.3,3.51,1,Male,Canterbury,18-21,Decile 7,3/2/2026 8:00
+143,202600023,Alexander Allen,ENG102,2026-S1,5,4,1,0.8,86.3,3.29,1,Female,Canterbury,26-30,Decile 2,3/2/2026 8:00
+144,202600024,Abigail King,MATH101,2026-S1,5,0,0,4.1,54.7,2.54,8,Male,Otago,18-21,Decile 2,3/2/2026 8:00
+145,202600025,Henry Hill,CS101,2026-S1,5,0,1,7.8,54.5,2.44,19,Female,Wellington,22-25,Decile 2,3/2/2026 8:00
+146,202600026,Emily Adams,DATA201,2026-S1,5,2,0,1.6,75.7,3.14,3,Female,Wellington,31-40,Decile 2,3/2/2026 8:00
+147,202600027,Jacob Smith,ENG102,2026-S1,5,3,0,2.7,69.1,2.97,4,Male,Waikato,22-25,Decile 4,3/2/2026 8:00
+148,202600028,Elizabeth Tane,MATH101,2026-S1,5,4,1,0.4,89.7,3.49,2,Male,Otago,41+,Decile 4,3/2/2026 8:00
+149,202600029,Michael Brown,CS101,2026-S1,5,6,3,0.1,89.8,3.45,1,Female,Auckland,31-40,Decile 9,3/2/2026 8:00
+150,202600030,Mila Davis,DATA201,2026-S1,5,1,1,8.3,54.7,2.23,6,Female,Bay of Plenty,22-25,Decile 6,3/2/2026 8:00
+151,202600031,William Anderson,ENG102,2026-S1,5,0,0,7.5,59.1,2,18,Female,Wellington,22-25,Decile 3,3/2/2026 8:00
+152,202600032,Ella White,MATH101,2026-S1,5,3,1,2.8,74.7,3.13,6,Male,Otago,22-25,Decile 2,3/2/2026 8:00
+153,202600033,Daniel Thompson,CS101,2026-S1,5,8,3,0.4,86.2,3.3,0,Male,Auckland,22-25,Decile 9,3/2/2026 8:00
+154,202600034,Scarlett Robinson,DATA201,2026-S1,5,8,1,0.5,87.2,3.74,0,Female,Canterbury,18-21,Decile 2,3/2/2026 8:00
+155,202600035,Logan Lewis,ENG102,2026-S1,5,2,0,4.5,52.3,2.46,10,Male,Otago,18-21,Decile 9,3/2/2026 8:00
+156,202600036,Victoria Hall,MATH101,2026-S1,5,1,0,5.4,60.9,2.03,20,Male,Auckland,22-25,Decile 8,3/2/2026 8:00
+157,202600037,Jackson Hernandez,CS101,2026-S1,5,1,0,3.8,51.6,2.29,7,Female,Auckland,18-21,Decile 8,3/2/2026 8:00
+158,202600038,Grace Lopez,DATA201,2026-S1,5,4,0,3.3,65.2,3.06,3,Male,Wellington,31-40,Decile 5,3/2/2026 8:00
+159,202600039,Levi Green,ENG102,2026-S1,5,4,2,0.1,86.7,3.9,1,Female,Canterbury,18-21,Decile 1,3/2/2026 8:00
+160,202600040,Chloe Chen,MATH101,2026-S1,5,4,2,0.2,96.7,3.83,1,Male,Auckland,22-25,Decile 7,3/2/2026 8:00
+161,202600041,Sebastian Patel,CS101,2026-S1,5,0,0,8.2,38.4,1.98,12,Male,Wellington,22-25,Decile 6,3/2/2026 8:00
+162,202600042,Penelope Taylor,DATA201,2026-S1,5,2,0,7.5,51.4,2.44,15,Male,Bay of Plenty,18-21,Decile 4,3/2/2026 8:00
+163,202600043,Jack Williams,ENG102,2026-S1,5,2,2,2,65.1,3.12,2,Female,Waikato,22-25,Decile 10,3/2/2026 8:00
+164,202600044,Zoey Moore,MATH101,2026-S1,5,4,1,2.2,77,2.87,4,Male,Auckland,18-21,Decile 8,3/2/2026 8:00
+165,202600045,Owen Jackson,CS101,2026-S1,5,7,3,0.1,84,3.57,0,Male,Wellington,18-21,Decile 7,3/2/2026 8:00
+166,202600046,Nora Martin,DATA201,2026-S1,5,4,1,0.8,87.5,3.67,2,Male,Canterbury,18-21,Decile 6,3/2/2026 8:00
+167,202600047,Theodore Martinez,ENG102,2026-S1,5,0,0,4.1,35.4,2.17,9,Female,Auckland,18-21,Decile 10,3/2/2026 8:00
+168,202600048,Lily Rodriguez,MATH101,2026-S1,5,1,1,9,50,2.04,6,Female,Wellington,18-21,Decile 2,3/2/2026 8:00
+169,202600049,Ryan Walker,CS101,2026-S1,5,3,2,2.1,69,2.81,4,Prefer not to say,Wellington,22-25,Decile 1,3/2/2026 8:00
+170,202600050,Eleanor Young,DATA201,2026-S1,5,2,0,1.9,71.1,2.64,4,Female,Auckland,18-21,Decile 3,3/2/2026 8:00
+171,202600051,Samuel Wright,ENG102,2026-S1,5,5,2,0.5,94,3.5,0,Non-Binary,Auckland,26-30,Decile 1,3/2/2026 8:00
+172,202600052,Hannah Scott,MATH101,2026-S1,5,7,1,0.3,90.1,3.91,2,Female,Otago,22-25,Decile 1,3/2/2026 8:00
+173,202600053,Wyatt Baker,CS101,2026-S1,5,1,1,6.9,45.1,2.44,17,Male,Bay of Plenty,31-40,Decile 5,3/2/2026 8:00
+174,202600054,Lillian Silva,DATA201,2026-S1,5,1,1,7,61.4,2.24,6,Female,Canterbury,18-21,Decile 2,3/2/2026 8:00
+175,202600055,David Wilson,ENG102,2026-S1,5,4,2,2.3,68.3,3.08,2,Female,Auckland,18-21,Decile 1,3/2/2026 8:00
+176,202600056,Addison Jones,MATH101,2026-S1,5,2,2,2.8,67.3,2.75,4,Female,Wellington,22-25,Decile 9,3/2/2026 8:00
+177,202600057,Carter Miller,CS101,2026-S1,5,6,1,0.1,93,3.42,1,Male,Wellington,18-21,Decile 9,3/2/2026 8:00
+178,202600058,Aubrey Thomas,DATA201,2026-S1,5,5,3,0.7,96.1,3.22,0,Female,Waikato,41+,Decile 1,3/2/2026 8:00
+179,202600059,Julian Harris,ENG102,2026-S1,5,0,0,8.4,39.9,2.3,20,Male,Manawatu-Whanganui,18-21,Decile 4,3/2/2026 8:00
+180,202600060,Aaliyah Garcia,MATH101,2026-S1,5,2,0,5.2,44.1,2.01,12,Female,Manawatu-Whanganui,22-25,Decile 10,3/2/2026 8:00
